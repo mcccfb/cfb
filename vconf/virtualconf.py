@@ -76,12 +76,14 @@ def standings_sortfunc(sr) :
 # enforce win minimum
 def check_minimum_wins(ordered_standings) :
     while(True) :
+        if (len(ordered_standings) < 1) :
+            return False
         first_place = ordered_standings[0];
         if (first_place.wins <= 1) :
             print("disqualifying one win " + first_place.team_name)
             ordered_standings.pop(0)
         else:
-            return
+            return True
 
 
         
@@ -226,7 +228,9 @@ def find_vconf_games(configuration, teams, year, verbose):
         return False
         
     ordered_standings = sorted(standings.values(), reverse = True, key = standings_sortfunc)
-    check_minimum_wins(ordered_standings)
+    if not check_minimum_wins(ordered_standings):
+        print("No team has enough wins")
+        return False
     if (verbose) :
         for line in ordered_standings:
             print(line)
