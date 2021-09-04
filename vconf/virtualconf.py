@@ -36,10 +36,14 @@ class StandingsRecord:
     def __init__(self, wins, losses, team_name):
         self.wins = wins
         self.losses = losses
+        self.ties = 0
         self.team_name = team_name
         
     def __str__(self):
-        return self.team_name + "\t" + str(self.wins) + "-" + str(self.losses)
+        if (self.ties == 0):
+            return self.team_name + "\t" + str(self.wins) + "-" + str(self.losses)
+        else:
+            return self.team_name + "\t" + str(self.wins) + "-" + str(self.losses) + "-" + str(self.ties)
 
 def build_standings(mcc_games) :
     standings = {}
@@ -48,6 +52,13 @@ def build_standings(mcc_games) :
         if (cur_mcc_game.away_points is None or cur_mcc_game.home_points is None) :
             pass
             # print("This game doesn't have a score")
+        elif (cur_mcc_game.away_points == cur_mcc_game.home_points) :
+            if (cur_mcc_game.away_id not in standings) :
+                standings[cur_mcc_game.away_id] = StandingsRecord(0, 0, cur_mcc_game.away_team)
+            if (cur_mcc_game.home_id not in standings) :
+                standings[cur_mcc_game.home_id] = StandingsRecord(0, 0, cur_mcc_game.home_team)
+            standings[cur_mcc_game.away_id].ties += 1
+            standings[cur_mcc_game.home_id].ties += 1
         elif (cur_mcc_game.away_points > cur_mcc_game.home_points) :
             if (cur_mcc_game.away_id in standings) :
                 standings[cur_mcc_game.away_id].wins += 1
@@ -70,7 +81,7 @@ def build_standings(mcc_games) :
     return standings
 
 def standings_sortfunc(sr) :
-    return (sr.wins * 1000 / (sr.losses + sr.wins)) - sr.losses + sr.wins
+    return (sr.wins * 1000 / (sr.losses + sr.wins + sr.ties)) - sr.losses + sr.wins
 
 
 # enforce win minimum
