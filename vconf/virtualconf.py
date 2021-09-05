@@ -93,7 +93,8 @@ def check_minimum_wins(ordered_standings) :
             return False
         first_place = ordered_standings[0];
         if (first_place.wins <= 1) :
-            print("disqualifying one win " + first_place.team_name)
+            print("disqualifying insufficient wins (" + str(first_place.wins) +
+                  ") from "  + first_place.team_name)
             ordered_standings.pop(0)
         else:
             return True
