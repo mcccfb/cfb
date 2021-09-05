@@ -6,6 +6,8 @@
 import cfbd
 from datetime import datetime
 
+MAX_TEAM_LENGTH = 24
+
 # teams = a dictionary of id->team_name of the teams we want in our conference
 #
 def find_mcc_games(api_instance, teams, cur_year) :
@@ -41,9 +43,9 @@ class StandingsRecord:
         
     def __str__(self):
         if (self.ties == 0):
-            return self.team_name + "\t" + str(self.wins) + "-" + str(self.losses)
+            return self.team_name.ljust(MAX_TEAM_LENGTH) + str(self.wins) + "-" + str(self.losses)
         else:
-            return self.team_name + "\t" + str(self.wins) + "-" + str(self.losses) + "-" + str(self.ties)
+            return self.team_name.ljust(MAX_TEAM_LENGTH) + str(self.wins) + "-" + str(self.losses) + "-" + str(self.ties)
 
 def build_standings(mcc_games) :
     standings = {}
