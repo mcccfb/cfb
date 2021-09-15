@@ -3,6 +3,7 @@
 # sadness score idea is by https://twitter.com/surrender_index?lang=en Jon Bois, etc
 # implementation is tuned to the cfbd data model
 #
+from datetime import datetime
 
 # using "official" formula from here:
 # https://github.com/andrew-shackelford/Surrender-Index/blob/master/surrender_index_bot.py
@@ -64,5 +65,9 @@ def sadness_score(punt):
 
 
 def print_punt(punt):
-    retval = punt.offense + " with 4th and " + str(punt.distance) + ", " + str(punt.yards_to_goal) + " yards to goal, gameclock " + str(punt.clock['minutes']) + ":" + "{:0>2d}".format(punt.clock['seconds']) + " in Q" + str(punt.period) + " (score " + str(punt.offense_score) + "-" + str(punt.defense_score) + ")"
+    fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+    game_time = datetime.strptime(punt.wallclock, fmt)
+    pretty_date = datetime.strftime(game_time, "%b %d, %Y")
+
+    retval = pretty_date + " " + punt.offense + " with 4th and " + str(punt.distance) + ", " + str(punt.yards_to_goal) + " yards to goal, gameclock " + str(punt.clock['minutes']) + ":" + "{:0>2d}".format(punt.clock['seconds']) + " in Q" + str(punt.period) + " (score " + str(punt.offense_score) + "-" + str(punt.defense_score) + ")"
     return retval
