@@ -8,6 +8,8 @@ from datetime import datetime
 
 MAX_TEAM_LENGTH = 24
 
+# knocks out the non-FBS teams for the given year from
+# the byref param teams
 def remove_fcs_teams(configuration, teams, cur_year):
     api_instance = cfbd.TeamsApi(cfbd.ApiClient(configuration))
     year = cur_year
@@ -238,13 +240,14 @@ def break_ties(ordered_standings, mcc_games):
 
 def find_vconf_games(configuration, teams, year, verbose):
 
-    remove_fcs_teams(configuration, teams, year)
+    curyear_teams = teams.copy()
+    remove_fcs_teams(configuration, curyear_teams, year)
     
     api_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
     
     today = datetime.utcnow()
 
-    mcc_games = find_mcc_games(api_instance, teams, year)
+    mcc_games = find_mcc_games(api_instance, curyear_teams, year)
     time_ordered_games = sorted(mcc_games.values(), reverse = False, key = timesortfunc)
     if (verbose):
         fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
