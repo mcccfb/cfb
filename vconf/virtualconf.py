@@ -8,6 +8,27 @@ from datetime import datetime
 
 MAX_TEAM_LENGTH = 24
 
+def remove_fcs_teams(configuration, teams, cur_year):
+    api_instance = cfbd.TeamsApi(cfbd.ApiClient(configuration))
+    year = cur_year
+    fcs_teams = []
+
+    fbs_teams = api_instance.get_fbs_teams(year=year)
+    for team_id in teams:
+        found = False
+        for cur_team in fbs_teams:
+            if (cur_team.id == team_id) :
+                found = True
+                break
+        if (not found) :
+            fcs_teams.append(team_id)
+            #print(teams[team_id] + " is an FCS team")
+
+    for fcs_team in fcs_teams :
+        del teams[fcs_team]
+
+
+
 # teams = a dictionary of id->team_name of the teams we want in our conference
 #
 def find_mcc_games(api_instance, teams, cur_year) :
@@ -47,6 +68,8 @@ class StandingsRecord:
         else:
             return self.team_name.ljust(MAX_TEAM_LENGTH) + str(self.wins) + "-" + str(self.losses) + "-" + str(self.ties)
 
+# returns a dictionary of team name -> StandingsRecord
+#
 def build_standings(mcc_games) :
     standings = {}
     for mcc_game_id in mcc_games :
@@ -214,6 +237,8 @@ def break_ties(ordered_standings, mcc_games):
         return True
 
 def find_vconf_games(configuration, teams, year, verbose):
+
+    remove_fcs_teams(configuration, teams, year)
     
     api_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
     
@@ -240,7 +265,7 @@ def find_vconf_games(configuration, teams, year, verbose):
         if (verbose):
             print("There are no standings, possibly because no games were completed.")
         return False
-        
+
     ordered_standings = sorted(standings.values(), reverse = True, key = standings_sortfunc)
     if not check_minimum_wins(ordered_standings):
         print("No team has enough wins")
