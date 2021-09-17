@@ -3,6 +3,7 @@
 #
 # Tools for "virtual conferences" of intramural results
 #
+import sys
 import cfbd
 from datetime import datetime
 
@@ -119,7 +120,7 @@ def check_minimum_wins(ordered_standings) :
         first_place = ordered_standings[0];
         if (first_place.wins <= 1) :
             print("disqualifying insufficient wins (" + str(first_place.wins) +
-                  ") from "  + first_place.team_name)
+                  ") from "  + first_place.team_name, file = sys.stderr)
             ordered_standings.pop(0)
         else:
             return True
@@ -165,7 +166,7 @@ def common_opp_margin(team1, team2, all_games):
             # team1 was not involved in this game
             pass
     # now we have all team1's margins organized by opponent
-    print("oppo check for " + team1 + " and " + team2)
+    print("oppo check for " + team1 + " and " + team2, file = sys.stderr)
     #print(oppos)
     for mcc_game_id in all_games :
         cur_mcc_game = all_games[mcc_game_id]
@@ -205,22 +206,22 @@ def common_opp_margin(team1, team2, all_games):
 #
 def break_ties(ordered_standings, mcc_games):
     if (len(ordered_standings) > 2 and standings_sortfunc(ordered_standings[0]) == standings_sortfunc(ordered_standings[1])) :
-        print("looks like a tie for the cup")
+        print("looks like a tie for the cup", file = sys.stderr)
         # find head to head
         h2h = head_to_head_winner(ordered_standings[0].team_name,
                                   ordered_standings[1].team_name, mcc_games)
         if (h2h < 0) :
-            print("Tie broken by head-to-head")
+            print("Tie broken by head-to-head", file = sys.stderr)
             # proper team is in first
             return True
         elif (h2h > 0) :
-            print("Tie broken by head-to-head")
+            print("Tie broken by head-to-head", file = sys.stderr)
             # promote second
             improper = ordered_standings.pop(0)
             ordered_standings.insert(1, improper)
             return True
         else:
-            print("head to head didn't resolve anything")
+            print("head to head didn't resolve anything", file = sys.stderr)
             oppo_check = common_opp_margin(ordered_standings[0].team_name,
                                            ordered_standings[1].team_name,
                                            mcc_games)
@@ -233,7 +234,7 @@ def break_ties(ordered_standings, mcc_games):
                 ordered_standings.insert(1, improper)
                 return True
             else:
-                print("common opponent margin didn't resolve anything")
+                print("common opponent margin didn't resolve anything", file = sys.stderr)
                 return False
     else:
         return True
@@ -265,13 +266,14 @@ def find_vconf_games(configuration, teams, year, verbose):
 
     standings = build_standings(mcc_games)
     if (len(standings) == 0):
-        if (verbose):
-            print("There are no standings, possibly because no games were completed.")
+        print("There are no standings, possibly because no games were completed.", file = sys.stderr)
+        print(str(year) + ", " + str(len(mcc_games)) + ", ,")
         return False
 
     ordered_standings = sorted(standings.values(), reverse = True, key = standings_sortfunc)
     if not check_minimum_wins(ordered_standings):
-        print("No team has enough wins")
+        print("No team has enough wins", file = sys.stderr)
+        print(str(year) + ", " + str(len(mcc_games)) + ", ,")
         return False
     if (verbose) :
         for line in ordered_standings:
@@ -286,9 +288,10 @@ def find_vconf_games(configuration, teams, year, verbose):
                 print(line)
             print()
 
-        print(str(year) + " MCC winner is " + ordered_standings[0].team_name + " (" +
-              str(ordered_standings[0].wins) + "-" + str(ordered_standings[0].losses) + ")")
+        print(str(year) + ", " + str(len(mcc_games)) + ", " + ordered_standings[0].team_name + ", " +
+              str(ordered_standings[0].wins) + "-" + str(ordered_standings[0].losses))
         return True
     else:
-        print("could not resolve a winner for " + str(year))
+        print("could not resolve a winner for " + str(year), file = sys.stderr)
+        print(str(year) + ", " + str(len(mcc_games)) + ", ,")
         return False
