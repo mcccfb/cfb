@@ -6,6 +6,8 @@
 import sys
 import cfbd
 from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
 
 MAX_TEAM_LENGTH = 24
 
@@ -248,13 +250,20 @@ def find_vconf_games(configuration, teams, year, verbose):
     
     today = datetime.utcnow()
 
+    pac_timez = timezone(timedelta(hours = -8))
+    utc_timez = timezone(timedelta(hours = 0))
+
     mcc_games = find_mcc_games(api_instance, curyear_teams, year)
     time_ordered_games = sorted(mcc_games.values(), reverse = False, key = timesortfunc)
     if (verbose):
         fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
         for cur_mcc_game in time_ordered_games:
             game_time = datetime.strptime(cur_mcc_game.start_date, fmt)
-            pretty_date = datetime.strftime(game_time, "%b %d, %Y")
+            # the printed stamp is in UTC but strptime reads it as local, so we need to
+            # surgically replace it at first and then re-interpret as local.
+            #
+            pac_game_time = game_time.replace(tzinfo = utc_timez).astimezone(pac_timez)
+            pretty_date = datetime.strftime(pac_game_time, "%b %d, %Y")
             if (game_time > today) :
                 print (cur_mcc_game.away_team + " at " +
                        cur_mcc_game.home_team + " on " +
