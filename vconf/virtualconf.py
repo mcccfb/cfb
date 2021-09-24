@@ -255,23 +255,28 @@ def find_vconf_games(configuration, teams, year, verbose):
 
     mcc_games = find_mcc_games(api_instance, curyear_teams, year)
     time_ordered_games = sorted(mcc_games.values(), reverse = False, key = timesortfunc)
-    if (verbose):
-        fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
-        for cur_mcc_game in time_ordered_games:
-            game_time = datetime.strptime(cur_mcc_game.start_date, fmt)
-            # the printed stamp is in UTC but strptime reads it as local, so we need to
-            # surgically replace it at first and then re-interpret as local.
-            #
-            pac_game_time = game_time.replace(tzinfo = utc_timez).astimezone(pac_timez)
-            pretty_date = datetime.strftime(pac_game_time, "%b %d, %Y")
-            if (game_time > today) :
+    fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+    any_games_in_future = False
+    for cur_mcc_game in time_ordered_games:
+        game_time = datetime.strptime(cur_mcc_game.start_date, fmt)
+        # the printed stamp is in UTC but strptime reads it as local, so we need to
+        # surgically replace it at first and then re-interpret as local.
+        #
+        pac_game_time = game_time.replace(tzinfo = utc_timez).astimezone(pac_timez)
+        pretty_date = datetime.strftime(pac_game_time, "%b %d, %Y")
+        if (game_time > today) :
+            any_games_in_future = True
+            if (verbose) :
                 print (cur_mcc_game.away_team + " at " +
                        cur_mcc_game.home_team + " on " +
                        pretty_date)
-            else :
+        else :
+            if (verbose) :
                 print (cur_mcc_game.away_team + " " + str(cur_mcc_game.away_points) + " at " +
                        cur_mcc_game.home_team + " " + str(cur_mcc_game.home_points) + " on " +
                        pretty_date)
+    if (verbose) :
+        print()
 
     standings = build_standings(mcc_games)
     if (len(standings) == 0):
@@ -280,18 +285,21 @@ def find_vconf_games(configuration, teams, year, verbose):
         return False
 
     ordered_standings = sorted(standings.values(), reverse = True, key = standings_sortfunc)
+    if (any_games_in_future) :
+        if (verbose) :
+            for line in ordered_standings:
+                print(line)
+        print(str(year) + ", " + str(len(mcc_games)) + ", ,")
+        return False
+
     if not check_minimum_wins(ordered_standings):
         print("No team has enough wins", file = sys.stderr)
         print(str(year) + ", " + str(len(mcc_games)) + ", ,")
         return False
-    if (verbose) :
-        for line in ordered_standings:
-            print(line)
 
     if (break_ties(ordered_standings, mcc_games)) :
         if (verbose) :
-            print()
-            print(str(year) + " ordered standings")
+            print(str(year) + " final standings")
             print()
             for line in ordered_standings:
                 print(line)
