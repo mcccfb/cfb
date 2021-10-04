@@ -18,8 +18,9 @@ all_ca_teams = {25: 'California', 278: 'Fresno State', 16: 'Sacramento State',
                 1000034: 'Loyola Marymount', 1000044: 'Pacific', 1000867: 'Pepperdine',
                 1000007: 'California-Santa Barbara', 1000888: 'San Francisco State',
                 1000006: 'Long Beach State', 1000012: 'Cal State Fullerton',
-                13: 'Cal Poly'
+                13: 'Cal Poly',
+                1000013: 'Cal State Los Angeles', 1000513: 'Cal Poly-Pomona'
 }
 
-for cur_year in range(1968, 2022) :
-    find_vconf_games(configuration, teams = all_ca_teams, year = cur_year, verbose = False)
+for cur_year in range(2021, 2022) :
+    find_vconf_games(configuration, teams = all_ca_teams, year = cur_year, verbose = True)
