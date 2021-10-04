@@ -24,40 +24,49 @@ class HomeAwaySplit:
 def homebias_sort(splitr):
     return (splitr.home - splitr.away)
 
-cur_year = 2021
-cur_team = 'Stanford'
+min_year = 2010
+max_year = 2021
+#cur_year = 2021
+#cur_team = 'Stanford'
 
 teams_dict = { }
-api_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
-#all_games = api_instance.get_games(year=cur_year, team = cur_team)
-all_games = api_instance.get_games(year=cur_year)
 
 # get all the games for a year
 
 # build a team -> games dict for all true home games
+api_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
+#all_games = api_instance.get_games(year=cur_year, team = cur_team)
 
-for cur_game in all_games:
-    if cur_game.home_id not in teams_dict:
-        home_split = HomeAwaySplit(team_name = cur_game.home_team)
-        teams_dict[cur_game.home_id] = home_split
-    else:
-        home_split = teams_dict[cur_game.home_id]
+
+def check_home_games_for_year(cur_year, teams_dict, api_instance) :
+    print("checking " + str(cur_year))
+    all_games = api_instance.get_games(year=cur_year)
+    
+    for cur_game in all_games:
+        if cur_game.home_id not in teams_dict:
+            home_split = HomeAwaySplit(team_name = cur_game.home_team)
+            teams_dict[cur_game.home_id] = home_split
+        else:
+            home_split = teams_dict[cur_game.home_id]
         
-    if (cur_game.neutral_site) :
-        home_split.neutral += 1
-    else :
-        home_split.home += 1
+        if (cur_game.neutral_site) :
+            home_split.neutral += 1
+        else :
+            home_split.home += 1
 
-    if cur_game.away_id not in teams_dict:
-        away_split = HomeAwaySplit(team_name = cur_game.away_team)
-        teams_dict[cur_game.away_id] = away_split
-    else :
-        away_split = teams_dict[cur_game.away_id]
+        if cur_game.away_id not in teams_dict:
+            away_split = HomeAwaySplit(team_name = cur_game.away_team)
+            teams_dict[cur_game.away_id] = away_split
+        else :
+            away_split = teams_dict[cur_game.away_id]
 
-    if (cur_game.neutral_site) :
-        away_split.neutral += 1
-    else :
-        away_split.away += 1
+        if (cur_game.neutral_site) :
+            away_split.neutral += 1
+        else :
+            away_split.away += 1
+
+for cur_year in range(min_year, max_year):
+    check_home_games_for_year(cur_year, teams_dict, api_instance)
 
 
 home_ordered_games = sorted(teams_dict.values(), reverse = True, key = homebias_sort)
@@ -65,7 +74,7 @@ home_ordered_games = sorted(teams_dict.values(), reverse = True, key = homebias_
 i = 0
 
 for team in home_ordered_games:
-    print(team)
     i += 1
-    if (i > 11):
+    print(str(i) + ". " + str(team))
+    if (i > 21):
         break
