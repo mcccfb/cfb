@@ -22,5 +22,11 @@ all_ca_teams = {25: 'California', 278: 'Fresno State', 16: 'Sacramento State',
                 1000013: 'Cal State Los Angeles', 1000513: 'Cal Poly-Pomona'
 }
 
+all_tx_teams = {249: 'North Texas', 2628: 'TCU', 251: 'Texas', 245: 'Texas A&M',
+                2641: 'Texas Tech', 2638: 'UTEP', 2636: 'UT San Antonio',
+                239: 'Baylor', 248: 'Houston', 2567: 'SMU', 2534: 'Sam Houston State',
+                326: 'Texas State', 242: 'Rice'
+                }
+
 for cur_year in range(2021, 2022) :
     find_vconf_games(configuration, teams = all_ca_teams, year = cur_year, verbose = True)
