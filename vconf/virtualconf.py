@@ -204,6 +204,38 @@ def common_opp_margin(team1, team2, all_games):
     else:
         return 0
 
+# return -1 if team 1 is winner, 1 if team2, 0 if tie
+def total_margin(team1, team2, all_games):
+    team1_margin = 0
+    team2_margin = 0
+
+    # first find all team1's margins
+    for mcc_game_id in all_games :
+        cur_mcc_game = all_games[mcc_game_id]
+        if (cur_mcc_game.home_team == team1) :
+            team1_margin += (cur_mcc_game.home_points - cur_mcc_game.away_points)
+        elif (cur_mcc_game.away_team == team1) :
+            team1_margin += (cur_mcc_game.away_points - cur_mcc_game.home_points)
+        else:
+            # team1 was not involved in this game
+            pass
+
+        if (cur_mcc_game.home_team == team2) :
+            team2_margin += (cur_mcc_game.home_points - cur_mcc_game.away_points)
+        elif (cur_mcc_game.away_team == team2) :
+            team2_margin += (cur_mcc_game.away_points - cur_mcc_game.home_points)
+        else:
+            # team2 was not involved in this game
+            pass
+
+    if (team1_margin > team2_margin) :
+        return -1
+    elif (team2_margin > team1_margin) :
+        return 1
+    else:
+        return 0
+
+
 # return True if we could break the tie
 #
 def break_ties(ordered_standings, mcc_games):
@@ -237,7 +269,19 @@ def break_ties(ordered_standings, mcc_games):
                 return True
             else:
                 print("common opponent margin didn't resolve anything", file = sys.stderr)
-                return False
+
+                total_check = total_margin(ordered_standings[0].team_name,
+                                           ordered_standings[1].team_name,
+                                           mcc_games)
+                if (total_check < 0) :
+                    return True
+                elif (total_check > 0) :
+                    improper = ordered_standings.pop(0)
+                    ordered_standings.insert(1, improper)
+                    return True
+                else:
+                    print("total margin didn't resolve anything", file = sys.stderr)
+                    return False
     else:
         return True
 
