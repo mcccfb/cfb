@@ -5,7 +5,9 @@
 #
 import os
 import cfbd
+from datetime import date
 from virtualconf import find_vconf_games
+import argparse
 
 configuration = cfbd.Configuration()
 configuration.api_key['Authorization'] = os.environ.get('CFBD_API_KEY')
@@ -28,5 +30,13 @@ all_tx_teams = {249: 'North Texas', 2628: 'TCU', 251: 'Texas', 245: 'Texas A&M',
                 326: 'Texas State', 242: 'Rice'
                 }
 
-for cur_year in range(2021, 2022) :
-    find_vconf_games(configuration, teams = all_ca_teams, year = cur_year, verbose = True)
+this_year = date.today().year
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--verbose', '-v', action = 'store_true')
+parser.add_argument('--start', '-s', type = int, default = this_year, help = "First year of range")
+parser.add_argument('--end', '-e', type = int, default = this_year, help = "Last year of range")
+args = parser.parse_args()
+
+for cur_year in range(args.start, args.end + 1) :
+    find_vconf_games(configuration, teams = all_ca_teams, year = cur_year, verbose = args.verbose)
