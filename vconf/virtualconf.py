@@ -283,7 +283,8 @@ def break_ties(ordered_standings, mcc_games):
 
 
 class PossibilityScoreboard:
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.teams = {}
         self.total_trials = 0
 
@@ -295,7 +296,7 @@ class PossibilityScoreboard:
         self.total_trials += 1
 
     def __str__(self):
-        s = "Possibility scoreboard:\n"
+        s = self.name + " Simulation:\n"
         for team in self.teams :
             pct_win = self.teams[team] * 100 // self.total_trials
             s += team + " " + str(self.teams[team]) + " [" + str(pct_win) + "%]\n"
@@ -309,7 +310,6 @@ def recursive_schedule_fill(time_sorted_games, cur_index, scoreboard):
         ordered_standings = sorted(standings.values(), reverse = True, key = standings_sortfunc)
         break_ties(ordered_standings, time_sorted_games)
         scoreboard.record_winner(ordered_standings[0].team_name)
-        return
     else :
         # jump to the node in question and first fill in a home team win
         cur_mcc_game = time_sorted_games[cur_index]
@@ -332,7 +332,7 @@ def find_possibilities(time_sorted_games):
         local_games_copy.append(copy.copy(cur_mcc_game))
         cur_index += 1
         
-    scoreboard = PossibilityScoreboard()
+    scoreboard = PossibilityScoreboard("Full Enumeration")
     recursive_schedule_fill(local_games_copy, future_index_start, scoreboard)
     print()
     print(str(scoreboard))
