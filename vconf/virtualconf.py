@@ -5,6 +5,7 @@
 #
 import sys
 import cfbd
+import copy
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
@@ -77,8 +78,7 @@ class StandingsRecord:
 #
 def build_standings(mcc_games) :
     standings = {}
-    for mcc_game_id in mcc_games :
-        cur_mcc_game = mcc_games[mcc_game_id]
+    for cur_mcc_game in mcc_games :
         if (cur_mcc_game.away_points is None or cur_mcc_game.home_points is None) :
             pass
             # print("This game doesn't have a score")
@@ -132,8 +132,7 @@ def check_minimum_wins(ordered_standings) :
 # return -1 if team 1 is winner, 1 if team2, 0 if tie    
 def head_to_head_winner(team1, team2, all_games):
     retval = 0
-    for mcc_game_id in all_games :
-        cur_mcc_game = all_games[mcc_game_id]
+    for cur_mcc_game in all_games :
         if (cur_mcc_game.home_team == team1 and cur_mcc_game.away_team == team2) :
             if (cur_mcc_game.home_points > cur_mcc_game.away_points) :
                 # team1 was the home team and home team won
@@ -158,8 +157,7 @@ def common_opp_margin(team1, team2, all_games):
     gross_margin_team1 = 0
     
     # first find all team1's margins
-    for mcc_game_id in all_games :
-        cur_mcc_game = all_games[mcc_game_id]
+    for cur_mcc_game in all_games :
         if (cur_mcc_game.home_team == team1) :
             oppos[cur_mcc_game.away_id] = (cur_mcc_game.home_points - cur_mcc_game.away_points)
         elif (cur_mcc_game.away_team == team1) :
@@ -170,8 +168,7 @@ def common_opp_margin(team1, team2, all_games):
     # now we have all team1's margins organized by opponent
     print("oppo check for " + team1 + " and " + team2, file = sys.stderr)
     #print(oppos)
-    for mcc_game_id in all_games :
-        cur_mcc_game = all_games[mcc_game_id]
+    for cur_mcc_game in all_games :
         if (cur_mcc_game.home_team == team2) :
             if (cur_mcc_game.away_id in oppos):
                 # this is a common opponent with team2 as home team
@@ -210,8 +207,7 @@ def total_margin(team1, team2, all_games):
     team2_margin = 0
 
     # first find all team1's margins
-    for mcc_game_id in all_games :
-        cur_mcc_game = all_games[mcc_game_id]
+    for cur_mcc_game in all_games :
         if (cur_mcc_game.home_team == team1) :
             team1_margin += (cur_mcc_game.home_points - cur_mcc_game.away_points)
         elif (cur_mcc_game.away_team == team1) :
@@ -285,26 +281,61 @@ def break_ties(ordered_standings, mcc_games):
     else:
         return True
 
-def recursive_schedule_fill(time_sorted_games, cur_index):
+
+class PossibilityScoreboard:
+    def __init__(self):
+        self.teams = {}
+        self.total_trials = 0
+
+    def record_winner(self, winning_team):
+        if (winning_team in self.teams):
+            self.teams[winning_team] += 1
+        else:
+            self.teams[winning_team] = 1
+        self.total_trials += 1
+
+    def __str__(self):
+        s = "Possibility scoreboard:\n"
+        for team in self.teams :
+            pct_win = self.teams[team] * 100 // self.total_trials
+            s += team + " " + str(self.teams[team]) + " [" + str(pct_win) + "%]\n"
+        return s
+    
+def recursive_schedule_fill(time_sorted_games, cur_index, scoreboard):
     if (cur_index >= len(time_sorted_games)) :
-        # we're at the end, print out and bounce
-        for cur_mcc_game in time_sorted_games:
-            print(cur_mcc_game.away_team + " " + str(cur_mcc_game.away_points) + " at " +
-                   cur_mcc_game.home_team + " " + str(cur_mcc_game.home_points))
-        print("-END OF RECURSION-")
+        # every time we get to the end of the recursion calculate a winner and
+        # add it to the scoreboard
+        standings = build_standings(time_sorted_games)
+        ordered_standings = sorted(standings.values(), reverse = True, key = standings_sortfunc)
+        break_ties(ordered_standings, time_sorted_games)
+        scoreboard.record_winner(ordered_standings[0].team_name)
         return
     else :
         # jump to the node in question and first fill in a home team win
         cur_mcc_game = time_sorted_games[cur_index]
         cur_mcc_game.away_points = 4
         cur_mcc_game.home_points = 55
-        recursive_schedule_fill(time_sorted_games, cur_index + 1)
+        recursive_schedule_fill(time_sorted_games, cur_index + 1, scoreboard)
         # then do a road team win
         cur_mcc_game.away_points = 55
         cur_mcc_game.home_points = 4
-        recursive_schedule_fill(time_sorted_games, cur_index + 1)
+        recursive_schedule_fill(time_sorted_games, cur_index + 1, scoreboard)
             
+def find_possibilities(time_sorted_games):
+    cur_index = 0
+    future_index_start = -1
+    local_games_copy = []
+    for cur_mcc_game in time_sorted_games:
+        if (cur_mcc_game.away_points is None) :
+            if (future_index_start == -1):
+                future_index_start = cur_index
+        local_games_copy.append(copy.copy(cur_mcc_game))
+        cur_index += 1
         
+    scoreboard = PossibilityScoreboard()
+    recursive_schedule_fill(local_games_copy, future_index_start, scoreboard)
+    print(str(scoreboard))
+
 def find_vconf_games(configuration, teams, year, verbose):
 
     curyear_teams = teams.copy()
@@ -321,8 +352,6 @@ def find_vconf_games(configuration, teams, year, verbose):
     time_ordered_games = sorted(mcc_games.values(), reverse = False, key = timesortfunc)
     fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
     any_games_in_future = False
-    future_index_start = -1
-    cur_index = 0
     for cur_mcc_game in time_ordered_games:
         game_time = datetime.strptime(cur_mcc_game.start_date, fmt)
         # the printed stamp is in UTC but strptime reads it as local, so we need to
@@ -332,8 +361,6 @@ def find_vconf_games(configuration, teams, year, verbose):
         pretty_date = datetime.strftime(pac_game_time, "%b %d, %Y")
         if (game_time > today) :
             any_games_in_future = True
-            if (future_index_start == -1):
-                future_index_start = cur_index
             if (verbose) :
                 print (cur_mcc_game.away_team + " at " +
                        cur_mcc_game.home_team + " on " +
@@ -343,14 +370,13 @@ def find_vconf_games(configuration, teams, year, verbose):
                 print (cur_mcc_game.away_team + " " + str(cur_mcc_game.away_points) + " at " +
                        cur_mcc_game.home_team + " " + str(cur_mcc_game.home_points) + " on " +
                        pretty_date)
-        cur_index += 1
     if (verbose) :
         print()
 
-    recursive_schedule_fill(time_ordered_games, future_index_start)
-    exit(0)
-    
-    standings = build_standings(mcc_games)
+    if (verbose and any_games_in_future):
+        find_possibilities(time_ordered_games)
+        
+    standings = build_standings(mcc_games.values())
     if (len(standings) == 0):
         print("There are no standings, possibly because no games were completed.", file = sys.stderr)
         print(str(year) + ", " + str(len(mcc_games)) + ", ,")
@@ -369,7 +395,7 @@ def find_vconf_games(configuration, teams, year, verbose):
         print(str(year) + ", " + str(len(mcc_games)) + ", ,")
         return False
 
-    if (break_ties(ordered_standings, mcc_games)) :
+    if (break_ties(ordered_standings, mcc_games.values())) :
         if (verbose) :
             print(str(year) + " final standings")
             print()
