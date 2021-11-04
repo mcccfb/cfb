@@ -285,6 +285,26 @@ def break_ties(ordered_standings, mcc_games):
     else:
         return True
 
+def recursive_schedule_fill(time_sorted_games, cur_index):
+    if (cur_index >= len(time_sorted_games)) :
+        # we're at the end, print out and bounce
+        for cur_mcc_game in time_sorted_games:
+            print(cur_mcc_game.away_team + " " + str(cur_mcc_game.away_points) + " at " +
+                   cur_mcc_game.home_team + " " + str(cur_mcc_game.home_points))
+        print("-END OF RECURSION-")
+        return
+    else :
+        # jump to the node in question and first fill in a home team win
+        cur_mcc_game = time_sorted_games[cur_index]
+        cur_mcc_game.away_points = 4
+        cur_mcc_game.home_points = 55
+        recursive_schedule_fill(time_sorted_games, cur_index + 1)
+        # then do a road team win
+        cur_mcc_game.away_points = 55
+        cur_mcc_game.home_points = 4
+        recursive_schedule_fill(time_sorted_games, cur_index + 1)
+            
+        
 def find_vconf_games(configuration, teams, year, verbose):
 
     curyear_teams = teams.copy()
@@ -301,6 +321,8 @@ def find_vconf_games(configuration, teams, year, verbose):
     time_ordered_games = sorted(mcc_games.values(), reverse = False, key = timesortfunc)
     fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
     any_games_in_future = False
+    future_index_start = -1
+    cur_index = 0
     for cur_mcc_game in time_ordered_games:
         game_time = datetime.strptime(cur_mcc_game.start_date, fmt)
         # the printed stamp is in UTC but strptime reads it as local, so we need to
@@ -310,6 +332,8 @@ def find_vconf_games(configuration, teams, year, verbose):
         pretty_date = datetime.strftime(pac_game_time, "%b %d, %Y")
         if (game_time > today) :
             any_games_in_future = True
+            if (future_index_start == -1):
+                future_index_start = cur_index
             if (verbose) :
                 print (cur_mcc_game.away_team + " at " +
                        cur_mcc_game.home_team + " on " +
@@ -319,9 +343,13 @@ def find_vconf_games(configuration, teams, year, verbose):
                 print (cur_mcc_game.away_team + " " + str(cur_mcc_game.away_points) + " at " +
                        cur_mcc_game.home_team + " " + str(cur_mcc_game.home_points) + " on " +
                        pretty_date)
+        cur_index += 1
     if (verbose) :
         print()
 
+    recursive_schedule_fill(time_ordered_games, future_index_start)
+    exit(0)
+    
     standings = build_standings(mcc_games)
     if (len(standings) == 0):
         print("There are no standings, possibly because no games were completed.", file = sys.stderr)
