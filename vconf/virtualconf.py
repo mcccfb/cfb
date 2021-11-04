@@ -115,14 +115,15 @@ def standings_sortfunc(sr) :
 
 
 # enforce win minimum
-def check_minimum_wins(ordered_standings) :
+def check_minimum_wins(ordered_standings, log_q):
     while(True) :
         if (len(ordered_standings) < 1) :
             return False
         first_place = ordered_standings[0];
         if (first_place.wins <= 1) :
-            print("disqualifying insufficient wins (" + str(first_place.wins) +
-                  ") from "  + first_place.team_name, file = sys.stderr)
+            ls = "MIN: disqualifying insufficient wins (" +  str(first_place.wins) \
+                + ") from "  + first_place.team_name
+            log_q.append(ls)
             ordered_standings.pop(0)
         else:
             return True
@@ -152,7 +153,7 @@ def head_to_head_winner(team1, team2, all_games):
     return retval
 
 # return -1 if team 1 is winner, 1 if team2, 0 if tie    
-def common_opp_margin(team1, team2, all_games):
+def common_opp_margin(team1, team2, all_games, log_q):
     oppos = {}
     gross_margin_team1 = 0
     
@@ -166,7 +167,7 @@ def common_opp_margin(team1, team2, all_games):
             # team1 was not involved in this game
             pass
     # now we have all team1's margins organized by opponent
-    print("oppo check for " + team1 + " and " + team2, file = sys.stderr)
+    log_q.append("TBRK oppo check for " + team1 + " and " + team2)
     #print(oppos)
     for cur_mcc_game in all_games :
         if (cur_mcc_game.home_team == team2) :
@@ -234,27 +235,27 @@ def total_margin(team1, team2, all_games):
 
 # return True if we could break the tie
 #
-def break_ties(ordered_standings, mcc_games):
+def break_ties(ordered_standings, mcc_games, log_q):
     if (len(ordered_standings) > 2 and standings_sortfunc(ordered_standings[0]) == standings_sortfunc(ordered_standings[1])) :
-        print("looks like a tie for the cup", file = sys.stderr)
+        log_q.append("TBRK initial tie")
         # find head to head
         h2h = head_to_head_winner(ordered_standings[0].team_name,
                                   ordered_standings[1].team_name, mcc_games)
         if (h2h < 0) :
-            print("Tie broken by head-to-head", file = sys.stderr)
+            log_q.append("TBRK tie broken by head-to-head")
             # proper team is in first
             return True
         elif (h2h > 0) :
-            print("Tie broken by head-to-head", file = sys.stderr)
+            log_q.append("TBRK tie broken by head-to-head")
             # promote second
             improper = ordered_standings.pop(0)
             ordered_standings.insert(1, improper)
             return True
         else:
-            print("head to head didn't resolve anything", file = sys.stderr)
+            log_q.append("TBRK head-to-head didn't resolve anything")
             oppo_check = common_opp_margin(ordered_standings[0].team_name,
                                            ordered_standings[1].team_name,
-                                           mcc_games)
+                                           mcc_games, log_q)
             if (oppo_check < 0) :
                 # proper team is in first
                 return True
@@ -264,7 +265,7 @@ def break_ties(ordered_standings, mcc_games):
                 ordered_standings.insert(1, improper)
                 return True
             else:
-                print("common opponent margin didn't resolve anything", file = sys.stderr)
+                log_q.append("TBRK common opponent margin didn't resolve anything")
 
                 total_check = total_margin(ordered_standings[0].team_name,
                                            ordered_standings[1].team_name,
@@ -276,7 +277,7 @@ def break_ties(ordered_standings, mcc_games):
                     ordered_standings.insert(1, improper)
                     return True
                 else:
-                    print("total margin didn't resolve anything", file = sys.stderr)
+                    log_q.append("TBRK total margin didn't resolve anything")
                     return False
     else:
         return True
@@ -308,7 +309,7 @@ def recursive_schedule_fill(time_sorted_games, cur_index, scoreboard):
         # add it to the scoreboard
         standings = build_standings(time_sorted_games)
         ordered_standings = sorted(standings.values(), reverse = True, key = standings_sortfunc)
-        break_ties(ordered_standings, time_sorted_games)
+        break_ties(ordered_standings, time_sorted_games, [])
         scoreboard.record_winner(ordered_standings[0].team_name)
     else :
         # jump to the node in question and first fill in a home team win
@@ -334,8 +335,12 @@ def find_possibilities(time_sorted_games):
         
     scoreboard = PossibilityScoreboard("Full Enumeration")
     recursive_schedule_fill(local_games_copy, future_index_start, scoreboard)
-    print()
     print(str(scoreboard))
+
+def log_stderr_and_clear(log_q):
+    for logline in log_q:
+        print(logline, file = sys.stderr)
+    log_q.clear()
 
 def find_vconf_games(configuration, teams, year, verbose):
 
@@ -345,6 +350,7 @@ def find_vconf_games(configuration, teams, year, verbose):
     api_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
     
     today = datetime.utcnow()
+    log_q = []
 
     pac_timez = timezone(timedelta(hours = -8))
     utc_timez = timezone(timedelta(hours = 0))
@@ -391,12 +397,16 @@ def find_vconf_games(configuration, teams, year, verbose):
         print(str(year) + ", " + str(len(mcc_games)) + ", ,")
         return False
 
-    if not check_minimum_wins(ordered_standings):
+    wins_ok = check_minimum_wins(ordered_standings, log_q)
+    log_stderr_and_clear(log_q)
+    if not wins_ok:
         print("No team has enough wins", file = sys.stderr)
         print(str(year) + ", " + str(len(mcc_games)) + ", ,")
         return False
 
-    if (break_ties(ordered_standings, mcc_games.values())) :
+    ties_ok = break_ties(ordered_standings, mcc_games.values(), log_q)
+    log_stderr_and_clear(log_q)
+    if (ties_ok) :
         if (verbose) :
             print(str(year) + " final standings")
             print()
