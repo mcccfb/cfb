@@ -334,6 +334,7 @@ def find_possibilities(time_sorted_games):
         
     scoreboard = PossibilityScoreboard()
     recursive_schedule_fill(local_games_copy, future_index_start, scoreboard)
+    print()
     print(str(scoreboard))
 
 def find_vconf_games(configuration, teams, year, verbose):
