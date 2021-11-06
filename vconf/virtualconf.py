@@ -203,10 +203,11 @@ def common_opp_margin(team1, team2, all_games, log_q):
         return 0
 
 # return -1 if team 1 is winner, 1 if team2, 0 if tie
-def total_margin(team1, team2, all_games):
+def total_margin(team1, team2, all_games, log_q):
     team1_margin = 0
     team2_margin = 0
 
+    log_q.append("TBRK total margin for " + team1 + " and " + team2)
     # first find all team1's margins
     for cur_mcc_game in all_games :
         if (cur_mcc_game.home_team == team1) :
@@ -269,7 +270,7 @@ def break_ties(ordered_standings, mcc_games, log_q):
 
                 total_check = total_margin(ordered_standings[0].team_name,
                                            ordered_standings[1].team_name,
-                                           mcc_games)
+                                           mcc_games, log_q)
                 if (total_check < 0) :
                     return True
                 elif (total_check > 0) :
