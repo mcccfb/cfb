@@ -111,8 +111,7 @@ def build_standings(mcc_games) :
     return standings
 
 def standings_sortfunc(sr) :
-    return (sr.wins * 1000 / (sr.losses + sr.wins + sr.ties)) - sr.losses + sr.wins
-
+    return (((sr.wins * 1000) + (sr.ties * 500)) / (sr.losses + sr.wins + sr.ties)) - sr.losses + sr.wins
 
 # enforce win minimum
 def check_minimum_wins(ordered_standings, log_q):
