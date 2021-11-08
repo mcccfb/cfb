@@ -67,12 +67,15 @@ class StandingsRecord:
         self.losses = losses
         self.ties = 0
         self.team_name = team_name
-        
-    def __str__(self):
+
+    def record_string(self):
         if (self.ties == 0):
-            return self.team_name.ljust(MAX_TEAM_LENGTH) + str(self.wins) + "-" + str(self.losses)
+            return str(self.wins) + "-" + str(self.losses)
         else:
-            return self.team_name.ljust(MAX_TEAM_LENGTH) + str(self.wins) + "-" + str(self.losses) + "-" + str(self.ties)
+            return str(self.wins) + "-" + str(self.losses) + "-" + str(self.ties)
+
+    def __str__(self):
+        return self.team_name.ljust(MAX_TEAM_LENGTH) + self.record_string()
 
 # returns a dictionary of team name -> StandingsRecord
 #
@@ -415,7 +418,7 @@ def find_vconf_games(configuration, teams, year, verbose):
             print()
 
         print(str(year) + ", " + str(len(mcc_games)) + ", " + ordered_standings[0].team_name + ", " +
-              str(ordered_standings[0].wins) + "-" + str(ordered_standings[0].losses))
+              ordered_standings[0].record_string())
         return True
     else:
         print("could not resolve a winner for " + str(year), file = sys.stderr)
