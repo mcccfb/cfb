@@ -69,10 +69,11 @@ class StandingsRecord:
         self.team_name = team_name
 
     def record_string(self):
+        s = str(self.wins) + "-" + str(self.losses)
         if (self.ties == 0):
-            return str(self.wins) + "-" + str(self.losses)
+            return s
         else:
-            return str(self.wins) + "-" + str(self.losses) + "-" + str(self.ties)
+            return s + "-" + str(self.ties)
 
     def __str__(self):
         return self.team_name.ljust(MAX_TEAM_LENGTH) + self.record_string()
