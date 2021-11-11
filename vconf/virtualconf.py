@@ -33,8 +33,6 @@ def remove_fcs_teams(configuration, teams, cur_year):
     for fcs_team in fcs_teams :
         del teams[fcs_team]
 
-
-
 # teams = a dictionary of id->team_name of the teams we want in our conference
 #
 def find_mcc_games(api_instance, teams, cur_year) :
@@ -55,7 +53,6 @@ def find_mcc_games(api_instance, teams, cur_year) :
                     #print("This was a MCC game " + teams[team_id] + " versus " + other_team)
                     mcc_games[cur_game.id] = cur_game
     return mcc_games
-
 
 def timesortfunc(mcc_game) :
     fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -131,8 +128,6 @@ def check_minimum_wins(ordered_standings, log_q):
         else:
             return True
 
-
-        
 # return -1 if team 1 is winner, 1 if team2, 0 if tie    
 def head_to_head_winner(team1, team2, all_games):
     retval = 0
@@ -236,7 +231,6 @@ def total_margin(team1, team2, all_games, log_q):
     else:
         return 0
 
-
 # return True if we could break the tie
 #
 def break_ties(ordered_standings, mcc_games, log_q):
@@ -285,7 +279,6 @@ def break_ties(ordered_standings, mcc_games, log_q):
                     return False
     else:
         return True
-
 
 class PossibilityScoreboard:
     def __init__(self, name):
