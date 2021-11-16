@@ -17,13 +17,10 @@ class Home_Team_Predictor(MC_Predictor):
 
     def predict_game(self, game):
         raw_p = self.random_decimal()
-        #print("predicting " + game.away_team + " at " + game.home_team + " with P" + str(raw_p))
         if (raw_p > .550):
-            #print("road team wins")
             game.home_points = 21
             game.away_points = 24
         else:
-            #print("home team wins")
             game.home_points = 24
             game.away_points = 21
 
