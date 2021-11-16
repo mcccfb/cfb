@@ -9,6 +9,7 @@ import copy
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
+from monte_carlo import *
 
 MAX_TEAM_LENGTH = 24
 
@@ -334,6 +335,33 @@ def find_possibilities(time_sorted_games):
     recursive_schedule_fill(local_games_copy, future_index_start, scoreboard)
     print(str(scoreboard))
 
+def monte_carlo_simulation(time_sorted_games):
+    # get a predictor object
+    predictor_object = Home_Team_Predictor()
+    scoreboard = PossibilityScoreboard("Monte Carlo (Home Team Predictor)")
+    for run_id in range(1, 10000):
+        # make a clean copy of the games
+        local_games_copy = []
+        #print("mc run " + str(run_id))
+        for cur_source_game in time_sorted_games:
+            local_games_copy.append(copy.copy(cur_source_game))
+        game_count = 0
+        predict_count = 0
+        for cur_mcc_game in local_games_copy:
+            game_count += 1
+            if (cur_mcc_game.away_points is None) :
+                predictor_object.predict_game(cur_mcc_game)
+                predict_count += 1
+                #print("after prediction road points is " + str(cur_mcc_game.away_points))
+        #print("mc run " + str(run_id) + " we predicted " + str(predict_count) + " of " + str(game_count))
+        standings = build_standings(local_games_copy)
+        ordered_standings = sorted(standings.values(), reverse = True, key = standings_sortfunc)
+        #print("raw monte run " + str(run_id) + " winner: " + str(ordered_standings[0]))
+        break_ties(ordered_standings, local_games_copy, [])
+        scoreboard.record_winner(ordered_standings[0].team_name)
+        #print("monte run " + str(run_id) + " winner: " + str(ordered_standings[0]))
+    print(str(scoreboard))
+
 def log_stderr_and_clear(log_q):
     for logline in log_q:
         print(logline, file = sys.stderr)
@@ -379,7 +407,8 @@ def find_vconf_games(configuration, teams, year, verbose):
 
     if (verbose and any_games_in_future):
         find_possibilities(time_ordered_games)
-        
+        monte_carlo_simulation(time_ordered_games)
+
     standings = build_standings(mcc_games.values())
     if (len(standings) == 0):
         print("There are no standings, possibly because no games were completed.", file = sys.stderr)
