@@ -336,8 +336,8 @@ def find_possibilities(time_sorted_games):
     print(str(scoreboard))
 
 def monte_carlo_simulation(time_sorted_games):
-    predictor_object = Sampled_Margin_Predictor()
-    scoreboard = PossibilityScoreboard("Monte Carlo [" + str(predictor_object) + "]")
+    predictor = Sampled_Margin_Predictor()
+    scoreboard = PossibilityScoreboard("Monte Carlo [" + str(predictor) + "]")
     for run_id in range(1, 10000):
         # make a clean copy of the games
         local_games_copy = []
@@ -345,7 +345,7 @@ def monte_carlo_simulation(time_sorted_games):
             local_games_copy.append(copy.copy(cur_source_game))
         for cur_mcc_game in local_games_copy:
             if (cur_mcc_game.away_points is None) :
-                predictor_object.predict_game(cur_mcc_game)
+                predictor.predict_game(cur_mcc_game)
         standings = build_standings(local_games_copy)
         ordered_standings = sorted(standings.values(), reverse = True, key = standings_sortfunc)
         break_ties(ordered_standings, local_games_copy, [])
