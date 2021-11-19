@@ -55,7 +55,7 @@ for cur_year in range(args.start, args.end + 1) :
         if (cur_mcc_game.away_points is None or cur_mcc_game.home_points is None) :
             pass
         else :
-            master_margins.append(cur_mcc_game.home_points - cur_mcc_game.away_points)
+            master_margins.append([cur_mcc_game.away_points, cur_mcc_game.home_points])
             if (cur_mcc_game.home_points > cur_mcc_game.away_points) :
                 year_wins += 1
             elif (cur_mcc_game.away_points > cur_mcc_game.home_points) :
@@ -69,7 +69,6 @@ for cur_year in range(args.start, args.end + 1) :
 
 pct = (wins + (ties / 2)) / (wins + losses + ties)
 
-master_margins.sort()
 print(master_margins)
 print("overall: " + str(wins) + "-" + str(losses) + "-" + str(ties))
 print("{:.3f}".format(pct))
