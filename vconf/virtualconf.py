@@ -335,8 +335,9 @@ def find_possibilities(time_sorted_games):
     recursive_schedule_fill(local_games_copy, future_index_start, scoreboard)
     print(str(scoreboard))
 
-def monte_carlo_simulation(time_sorted_games):
-    predictor = Sampled_Margin_Predictor()
+def monte_carlo_simulation(time_sorted_games, configuration):
+    # predictor = Sampled_Margin_Predictor()
+    predictor = Elo_Predictor(configuration)
     scoreboard = PossibilityScoreboard("Monte Carlo [" + str(predictor) + "]")
     for run_id in range(1, 10000):
         # make a clean copy of the games
@@ -397,7 +398,7 @@ def find_vconf_games(configuration, teams, year, verbose):
 
     if (verbose and any_games_in_future):
         find_possibilities(time_ordered_games)
-        monte_carlo_simulation(time_ordered_games)
+        monte_carlo_simulation(time_ordered_games, configuration)
 
     standings = build_standings(mcc_games.values())
     if (len(standings) == 0):

@@ -2,6 +2,9 @@
 # November 16, 2021
 #
 import secrets
+from elo import p_win_elo
+from elo import get_cfbd_elo_dict
+
 
 class MC_Predictor:
 
@@ -60,3 +63,32 @@ class Sampled_Margin_Predictor(MC_Predictor):
 
     def __str__(self):
         return "Sampled Home Margin Predictor"
+
+
+class Elo_Predictor(MC_Predictor):
+
+    def __init__(self, configuration):
+        self.elo_dict = get_cfbd_elo_dict(configuration)
+
+    def predict_game(self, game):
+        if game.home_team not in self.elo_dict:
+            home_elo = 1400
+        else:
+            home_elo_entry = self.elo_dict[game.home_team]
+            home_elo = home_elo_entry.elo
+        if game.away_team not in self.elo_dict:
+            away_elo = 1400
+        else:
+            away_elo_entry = self.elo_dict[game.away_team]
+            away_elo = away_elo_entry.elo
+        p_home_win = p_win_elo(home_elo, away_elo)
+        raw_p = self.random_decimal()
+        if (raw_p < p_home_win):
+            game.home_points = 24
+            game.away_points = 21
+        else:
+            game.home_points = 21
+            game.away_points = 24
+
+    def __str__(self):
+        return "Elo Predictor"
