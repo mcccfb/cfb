@@ -37,7 +37,8 @@ class Home_Team_Predictor(MC_Predictor):
 #
 class Sampled_Margin_Predictor(MC_Predictor):
 
-    def predict_game(self, game):
+    @staticmethod
+    def random_score():
         real_life_data = [[7, 35], [48, 14], [33, 18], [35, 37], [35, 0], [28, 14], \
                           [14, 48], [21, 36], [30, 9], [27, 24], [28, 35], [3, 57], \
                           [19, 45], [28, 31], [17, 27], [14, 31], [56, 48], [0, 50], \
@@ -56,8 +57,12 @@ class Sampled_Margin_Predictor(MC_Predictor):
                           [15, 14], [41, 17], [7, 17], [27, 17], [16, 17], [34, 16], \
                           [24, 20], [23, 14], [28, 18], [23, 31], [20, 45], [35, 52], \
                           [24, 23], [28, 17], [10, 34], [43, 38], [48, 47], [30, 20], \
-                          [19, 13], [35, 24], [40, 37], [7, 30], [42, 28]]
-        sample_margin = secrets.choice(real_life_data)
+                          [19, 13], [35, 24], [40, 37], [7, 30], [42, 28], [62, 33], \
+                          [41, 11], [40, 9]]
+        return secrets.choice(real_life_data)
+        
+    def predict_game(self, game):
+        sample_margin = self.random_score();
         game.away_points = sample_margin[0]
         game.home_points = sample_margin[1]
 
@@ -83,12 +88,19 @@ class Elo_Predictor(MC_Predictor):
             away_elo = away_elo_entry.elo
         p_home_win = p_win_elo(home_elo, away_elo)
         raw_p = self.random_decimal()
-        if (raw_p < p_home_win):
-            game.home_points = 24
-            game.away_points = 21
+        sample_margin = Sampled_Margin_Predictor.random_score();
+        if (sample_margin[0] > sample_margin[1]):
+            winning_score = sample_margin[0]
+            losing_score = sample_margin[1]
         else:
-            game.home_points = 21
-            game.away_points = 24
+            losing_score = sample_margin[0]
+            winning_score = sample_margin[1]
+        if (raw_p < p_home_win):
+            game.home_points = winning_score
+            game.away_points = losing_score
+        else:
+            game.home_points = losing_score
+            game.away_points = winning_score
 
     def __str__(self):
         return "Elo Predictor"
