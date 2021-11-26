@@ -60,7 +60,7 @@ class Sampled_Margin_Predictor(MC_Predictor):
                           [19, 13], [35, 24], [40, 37], [7, 30], [42, 28], [62, 33], \
                           [41, 11], [40, 9]]
         return secrets.choice(real_life_data)
-        
+
     def predict_game(self, game):
         sample_margin = self.random_score();
         game.away_points = sample_margin[0]
@@ -69,6 +69,8 @@ class Sampled_Margin_Predictor(MC_Predictor):
     def __str__(self):
         return "Sampled Home Margin Predictor"
 
+
+HOME_FIELD_ELO_BOOST = 35
 
 class Elo_Predictor(MC_Predictor):
 
@@ -86,6 +88,7 @@ class Elo_Predictor(MC_Predictor):
         else:
             away_elo_entry = self.elo_dict[game.away_team]
             away_elo = away_elo_entry.elo
+        home_elo += HOME_FIELD_ELO_BOOST
         p_home_win = p_win_elo(home_elo, away_elo)
         raw_p = self.random_decimal()
         sample_margin = Sampled_Margin_Predictor.random_score();
