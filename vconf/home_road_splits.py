@@ -41,17 +41,31 @@ ties = 0
 
 master_margins = []
 
-for cur_year in range(args.start, args.end + 1) :
+def get_vconf_games(year, configuration):
     curyear_teams = all_ca_teams.copy()
     remove_fcs_teams(configuration, curyear_teams, cur_year)
-
     api_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
+    return find_mcc_games(api_instance, curyear_teams, cur_year)
 
-    vconf_games = find_mcc_games(api_instance, curyear_teams, cur_year)
+def get_conf_games(year, configuration):
+    api_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
+    all_conf_games = api_instance.get_games(year=cur_year, conference = 'SEC')
+    conf_only = { }
+    for cur_game in all_conf_games:
+        if (not cur_game.conference_game):
+            conf_only[cur_game.id] = cur_game
+    return conf_only
+
+for cur_year in range(args.start, args.end + 1) :
+    #vconf_games = get_vconf_games(cur_year, configuration)
+    vconf_games = get_conf_games(cur_year, configuration)
     year_wins = 0
     year_losses = 0
     year_ties = 0
     for cur_mcc_game in vconf_games.values():
+        if (cur_mcc_game.neutral_site):
+            continue
+        #print("sanity check " + cur_mcc_game.away_team + " at " + cur_mcc_game.home_team)
         if (cur_mcc_game.away_points is None or cur_mcc_game.home_points is None) :
             pass
         else :
@@ -69,6 +83,7 @@ for cur_year in range(args.start, args.end + 1) :
 
 pct = (wins + (ties / 2)) / (wins + losses + ties)
 
-print(master_margins)
+if (args.verbose):
+    print(master_margins)
 print("overall: " + str(wins) + "-" + str(losses) + "-" + str(ties))
 print("{:.3f}".format(pct))
