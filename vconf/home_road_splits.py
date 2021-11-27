@@ -39,6 +39,9 @@ wins = 0
 losses = 0
 ties = 0
 
+ot_wins = 0
+ot_losses = 0
+
 master_margins = []
 
 def get_vconf_games(year, configuration):
@@ -47,18 +50,20 @@ def get_vconf_games(year, configuration):
     api_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
     return find_mcc_games(api_instance, curyear_teams, cur_year)
 
-def get_conf_games(year, configuration):
+def get_conf_games(year, conf_abbrev, configuration):
     api_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
-    all_conf_games = api_instance.get_games(year=cur_year, conference = 'SEC')
+    all_conf_games = api_instance.get_games(year=cur_year, conference = conf_abbrev)
     conf_only = { }
     for cur_game in all_conf_games:
-        if (not cur_game.conference_game):
+        if (cur_game.conference_game):
             conf_only[cur_game.id] = cur_game
     return conf_only
 
+conf_abbrev = 'PAC'
+
 for cur_year in range(args.start, args.end + 1) :
     #vconf_games = get_vconf_games(cur_year, configuration)
-    vconf_games = get_conf_games(cur_year, configuration)
+    vconf_games = get_conf_games(cur_year, conf_abbrev, configuration)
     year_wins = 0
     year_losses = 0
     year_ties = 0
@@ -76,7 +81,15 @@ for cur_year in range(args.start, args.end + 1) :
                 year_losses += 1
             else:
                 year_ties += 1
-    print("totals for year " + str(cur_year) + " home team is " + str(year_wins) + "-" + str(year_losses) + "-" + str(year_ties))
+            if (len(cur_mcc_game.home_line_scores) > 4):
+                # ot
+                # print("OT sanity check " + str(cur_mcc_game.season) + " " + cur_mcc_game.away_team + " at " + cur_mcc_game.home_team)
+                if (cur_mcc_game.home_points > cur_mcc_game.away_points) :
+                    ot_wins += 1
+                else:
+                    ot_losses += 1
+    #print("totals for year " + str(cur_year) + " home team is " + str(year_wins) + "-" + str(year_losses) + "-" + str(year_ties))
+    print(str(cur_year) + ", " + conf_abbrev + ", " + str(year_wins) + ", " + str(year_losses))
     wins += year_wins
     losses += year_losses
     ties += year_ties
@@ -87,3 +100,5 @@ if (args.verbose):
     print(master_margins)
 print("overall: " + str(wins) + "-" + str(losses) + "-" + str(ties))
 print("{:.3f}".format(pct))
+
+#print("OT record: " + str(ot_wins) + "-" + str(ot_losses))
