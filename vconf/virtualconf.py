@@ -337,7 +337,7 @@ def find_possibilities(time_sorted_games):
 
 def monte_carlo_simulation(time_sorted_games, predictor):
     scoreboard = PossibilityScoreboard("Monte Carlo [" + str(predictor) + "]")
-    for run_id in range(1, 10000):
+    for run_id in range(0, 10000):
         # make a clean copy of the games
         local_games_copy = []
         for cur_source_game in time_sorted_games:
