@@ -9,6 +9,7 @@ from datetime import date
 from virtualconf import remove_fcs_teams
 from virtualconf import find_mcc_games
 import argparse
+from elo import p_win_elo
 
 configuration = cfbd.Configuration()
 configuration.api_key['Authorization'] = os.environ.get('CFBD_API_KEY')
@@ -42,6 +43,12 @@ ties = 0
 ot_wins = 0
 ot_losses = 0
 
+elo_wins = 0.0
+elo_losses = 0.0
+
+missing_elo_wins = 0
+missing_elo_losses = 0
+
 master_margins = []
 
 def get_vconf_games(year, configuration):
@@ -55,18 +62,20 @@ def get_conf_games(year, conf_abbrev, configuration):
     all_conf_games = api_instance.get_games(year=cur_year, conference = conf_abbrev)
     conf_only = { }
     for cur_game in all_conf_games:
-        if (cur_game.conference_game):
+        if (not cur_game.conference_game):
             conf_only[cur_game.id] = cur_game
     return conf_only
 
-conf_abbrev = 'PAC'
+conf_abbrev = 'ACC'
 
 for cur_year in range(args.start, args.end + 1) :
-    #vconf_games = get_vconf_games(cur_year, configuration)
-    vconf_games = get_conf_games(cur_year, conf_abbrev, configuration)
+    vconf_games = get_vconf_games(cur_year, configuration)
+    #vconf_games = get_conf_games(cur_year, conf_abbrev, configuration)
     year_wins = 0
     year_losses = 0
     year_ties = 0
+    year_elo_wins = 0.0
+    year_elo_losses = 0.0
     for cur_mcc_game in vconf_games.values():
         if (cur_mcc_game.neutral_site):
             continue
@@ -75,6 +84,19 @@ for cur_year in range(args.start, args.end + 1) :
             pass
         else :
             master_margins.append([cur_mcc_game.away_points, cur_mcc_game.home_points])
+            if (cur_mcc_game.home_pregame_elo is not None and cur_mcc_game.away_pregame_elo is not None):
+                home_elo_prob = p_win_elo(cur_mcc_game.home_pregame_elo, cur_mcc_game.away_pregame_elo)
+                year_elo_wins += home_elo_prob
+                year_elo_losses += (1 - home_elo_prob)
+            else:
+                print("No Elos for " + str(cur_mcc_game.season) + " " + cur_mcc_game.away_team + " at " + cur_mcc_game.home_team)
+                if (cur_mcc_game.home_points > cur_mcc_game.away_points) :
+                    missing_elo_wins += 1
+                else:
+                    missing_elo_losses += 1
+                    print("NO ELO LOSS!")
+                continue
+            
             if (cur_mcc_game.home_points > cur_mcc_game.away_points) :
                 year_wins += 1
             elif (cur_mcc_game.away_points > cur_mcc_game.home_points) :
@@ -90,9 +112,12 @@ for cur_year in range(args.start, args.end + 1) :
                     ot_losses += 1
     #print("totals for year " + str(cur_year) + " home team is " + str(year_wins) + "-" + str(year_losses) + "-" + str(year_ties))
     print(str(cur_year) + ", " + conf_abbrev + ", " + str(year_wins) + ", " + str(year_losses))
+    print(str(cur_year) + " ELO " + "{:.3f}".format(year_elo_wins) + "-" + "{:.3f}".format(year_elo_losses))
     wins += year_wins
     losses += year_losses
     ties += year_ties
+    elo_wins += year_elo_wins
+    elo_losses += year_elo_losses
 
 pct = (wins + (ties / 2)) / (wins + losses + ties)
 
@@ -102,3 +127,11 @@ print("overall: " + str(wins) + "-" + str(losses) + "-" + str(ties))
 print("{:.3f}".format(pct))
 
 #print("OT record: " + str(ot_wins) + "-" + str(ot_losses))
+elo_pct = elo_wins / (elo_wins + elo_losses)
+print("overall ELO: " + "{:.1f}".format(elo_wins) + "-" + "{:.1f}".format(elo_losses))
+print("{:.3f}".format(elo_pct))
+
+print("missing ELOS: " + str(missing_elo_wins) + "-" + str(missing_elo_losses))
+
+hfa_delta = pct - elo_pct
+print("HFA on available data: " + "{:.3f}".format(hfa_delta))
