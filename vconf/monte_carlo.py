@@ -70,7 +70,8 @@ class Sampled_Margin_Predictor(MC_Predictor):
         return "Sampled Home Margin Predictor"
 
 
-HOME_FIELD_ELO_BOOST = 35
+HOME_FIELD_ELO_CONF_BOOST = 35
+HOME_FIELD_ELO_NON_CONF_BOOST = 60
 
 class Elo_Predictor(MC_Predictor):
 
@@ -88,7 +89,10 @@ class Elo_Predictor(MC_Predictor):
         else:
             away_elo_entry = self.elo_dict[game.away_team]
             away_elo = away_elo_entry.elo
-        home_elo += HOME_FIELD_ELO_BOOST
+        if (game.conference_game):
+            home_elo += HOME_FIELD_ELO_CONF_BOOST
+        else:
+            home_elo += HOME_FIELD_ELO_NON_CONF_BOOST
         p_home_win = p_win_elo(home_elo, away_elo)
         raw_p = self.random_decimal()
         sample_margin = Sampled_Margin_Predictor.random_score();
