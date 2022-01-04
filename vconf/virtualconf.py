@@ -232,6 +232,14 @@ def total_margin(team1, team2, all_games, log_q):
     else:
         return 0
 
+# take the old leader off and switch it with a promote_index
+#
+def promote_standings(ordered_standings, promote_index):
+    old_leader = ordered_standings.pop(0)
+    new_leader = ordered_standings.pop(promote_index - 1)    
+    ordered_standings.insert(0, new_leader)
+    ordered_standings.insert(promote_index, old_leader)
+    
 # return True if we could break the tie
 #
 def break_ties(ordered_standings, mcc_games, log_q):
@@ -247,8 +255,7 @@ def break_ties(ordered_standings, mcc_games, log_q):
         elif (h2h > 0) :
             log_q.append("TBRK tie broken by head-to-head")
             # promote second
-            improper = ordered_standings.pop(0)
-            ordered_standings.insert(1, improper)
+            promote_standings(ordered_standings, 1)
             return True
         else:
             log_q.append("TBRK head-to-head didn't resolve anything")
@@ -260,8 +267,7 @@ def break_ties(ordered_standings, mcc_games, log_q):
                 return True
             elif (oppo_check > 0) :
                 # promote second
-                improper = ordered_standings.pop(0)
-                ordered_standings.insert(1, improper)
+                promote_standings(ordered_standings, 1)
                 return True
             else:
                 log_q.append("TBRK common opponent margin didn't resolve anything")
@@ -272,8 +278,7 @@ def break_ties(ordered_standings, mcc_games, log_q):
                 if (total_check < 0) :
                     return True
                 elif (total_check > 0) :
-                    improper = ordered_standings.pop(0)
-                    ordered_standings.insert(1, improper)
+                    promote_standings(ordered_standings, 1)
                     return True
                 else:
                     log_q.append("TBRK total margin didn't resolve anything")
