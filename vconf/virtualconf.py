@@ -243,48 +243,66 @@ def promote_standings(ordered_standings, promote_index):
 # return True if we could break the tie
 #
 def break_ties(ordered_standings, mcc_games, log_q):
-    if (len(ordered_standings) > 2 and standings_sortfunc(ordered_standings[0]) == standings_sortfunc(ordered_standings[1])) :
-        log_q.append("TBRK initial tie")
-        # find head to head
-        h2h = head_to_head_winner(ordered_standings[0].team_name,
-                                  ordered_standings[1].team_name, mcc_games)
-        if (h2h < 0) :
-            log_q.append("TBRK tie broken by head-to-head")
+    count_tied_teams = 1
+    total_teams = len(ordered_standings)
+    if (total_teams <= 1):
+        return True
+
+    for i in range(1, (total_teams -1)):
+        if (standings_sortfunc(ordered_standings[0]) == standings_sortfunc(ordered_standings[i])):
+            count_tied_teams += 1
+        else:
+            break
+
+    if (count_tied_teams <= 1):
+        return True
+
+    if (count_tied_teams > 2):
+        print(str(count_tied_teams) + " is too many tied teams for us!")
+        return False
+
+    log_q.append("TBRK initial tie")
+    return break_two_team_tie(ordered_standings, mcc_games, log_q)
+
+def break_two_team_tie(ordered_standings, mcc_games, log_q):
+    # find head to head
+    h2h = head_to_head_winner(ordered_standings[0].team_name,
+                              ordered_standings[1].team_name, mcc_games)
+    if (h2h < 0) :
+        log_q.append("TBRK tie broken by head-to-head")
+        # proper team is in first
+        return True
+    elif (h2h > 0) :
+        log_q.append("TBRK tie broken by head-to-head")
+        # promote second
+        promote_standings(ordered_standings, 1)
+        return True
+    else:
+        log_q.append("TBRK head-to-head didn't resolve anything")
+        oppo_check = common_opp_margin(ordered_standings[0].team_name,
+                                       ordered_standings[1].team_name,
+                                       mcc_games, log_q)
+        if (oppo_check < 0) :
             # proper team is in first
             return True
-        elif (h2h > 0) :
-            log_q.append("TBRK tie broken by head-to-head")
+        elif (oppo_check > 0) :
             # promote second
             promote_standings(ordered_standings, 1)
             return True
         else:
-            log_q.append("TBRK head-to-head didn't resolve anything")
-            oppo_check = common_opp_margin(ordered_standings[0].team_name,
-                                           ordered_standings[1].team_name,
-                                           mcc_games, log_q)
-            if (oppo_check < 0) :
-                # proper team is in first
+            log_q.append("TBRK common opponent margin didn't resolve anything")
+
+            total_check = total_margin(ordered_standings[0].team_name,
+                                       ordered_standings[1].team_name,
+                                       mcc_games, log_q)
+            if (total_check < 0) :
                 return True
-            elif (oppo_check > 0) :
-                # promote second
+            elif (total_check > 0) :
                 promote_standings(ordered_standings, 1)
                 return True
             else:
-                log_q.append("TBRK common opponent margin didn't resolve anything")
-
-                total_check = total_margin(ordered_standings[0].team_name,
-                                           ordered_standings[1].team_name,
-                                           mcc_games, log_q)
-                if (total_check < 0) :
-                    return True
-                elif (total_check > 0) :
-                    promote_standings(ordered_standings, 1)
-                    return True
-                else:
-                    log_q.append("TBRK total margin didn't resolve anything")
-                    return False
-    else:
-        return True
+                log_q.append("TBRK total margin didn't resolve anything")
+                return False
 
 class PossibilityScoreboard:
     def __init__(self, name):
