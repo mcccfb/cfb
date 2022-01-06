@@ -257,13 +257,78 @@ def break_ties(ordered_standings, mcc_games, log_q):
     if (count_tied_teams <= 1):
         return True
 
-    if (count_tied_teams > 2):
-        print(str(count_tied_teams) + " is too many tied teams for us!")
+    if (count_tied_teams > 3):
+        print(str(count_tied_teams) + " is too many tied teams for us!", stderr)
         return False
 
-    log_q.append("TBRK initial tie")
+    if (count_tied_teams == 3):
+        log_q.append("TBRK 3-team tie")
+        res = break_three_team_tie(ordered_standings, mcc_games, log_q)
+        if (not res):
+            return False
+        
+    log_q.append("TBRK 2-team tie")
     return break_two_team_tie(ordered_standings, mcc_games, log_q)
 
+# Shallow check of tiebreakers on the possible dyads within the three teams.
+# Any observed tie break on any dyad is a short circuit to "success" because
+# the result will still be passed through the two-team tiebreak filter.
+# I.e. we don't have to worry about being unfair because we're not picking a
+# winner yet, we're just weeding out one loser.
+#
+def break_three_team_tie(ordered_standings, mcc_games, log_q):
+    dyads = [ [0,1], [0,2], [1,2]]
+
+    for dyad in dyads:
+        h2h = head_to_head_winner(ordered_standings[dyad[0]].team_name,
+                                  ordered_standings[dyad[1]].team_name, mcc_games)
+        broken = interpret_dyad_result(h2h, dyad, ordered_standings, log_q)
+        if (broken):
+            log_q.append("TBRK 3-team tie broken by H2H for " + ordered_standings[dyad[0]].team_name + \
+                         " and " + ordered_standings[dyad[1]].team_name)                         
+            return True
+
+    for dyad in dyads:
+        oppo_check = common_opp_margin(ordered_standings[dyad[0]].team_name,
+                                       ordered_standings[dyad[1]].team_name,
+                                       mcc_games, log_q)
+        broken = interpret_dyad_result(oppo_check, dyad, ordered_standings, log_q)
+        if (broken):
+            log_q.append("TBRK 3-team tie broken by common oppo for " + ordered_standings[dyad[0]].team_name + \
+                         " and " + ordered_standings[dyad[1]].team_name)            
+            return True
+
+    for dyad in dyads:
+        total_check = total_margin(ordered_standings[dyad[0]].team_name,
+                                   ordered_standings[dyad[1]].team_name,
+                                   mcc_games, log_q)
+        broken = interpret_dyad_result(total_check, dyad, ordered_standings, log_q)
+        if (broken):
+            log_q.append("TBRK 3-team tie broken by total margin for " + ordered_standings[dyad[0]].team_name + \
+                         " and " + ordered_standings[dyad[1]].team_name)                        
+            return True
+
+    return False
+
+
+
+def interpret_dyad_result(result, dyad, ordered_standings, log_q):
+    if (result == 0):
+        return False
+
+    # if we have an actual result we want to demote the loser to
+    # third place and return true
+    if (result < 0):
+        # dyad[0] won, so dyad[1] should be in third.
+        demotion_index = dyad[1]
+    else:
+        demotion_index = dyad[0]
+
+    # array surgery... take out the demoted and put it in third
+    element = ordered_standings.pop(demotion_index)
+    ordered_standings.insert(2, element)
+    return True
+        
 def break_two_team_tie(ordered_standings, mcc_games, log_q):
     # find head to head
     h2h = head_to_head_winner(ordered_standings[0].team_name,
