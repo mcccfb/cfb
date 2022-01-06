@@ -13,14 +13,19 @@ configuration.api_key['Authorization'] = os.environ.get('CFBD_API_KEY')
 configuration.api_key_prefix['Authorization'] = 'Bearer'
 
 year = 2021
-week = 1
-top_n = 60
+week = 6
+top_n = 20
 
 # note that week and year are required for the API
 api_instance = cfbd.PlaysApi(cfbd.ApiClient(configuration))
 #all_punts = api_instance.get_plays(year = year, week = week, team = 'Stanford', play_type = 52)
 all_punts = api_instance.get_plays(year = year, week = week, play_type = 52)
+#year_punts = api_instance.get_plays(year = year, week = week, play_type = 52)
 
+#all_punts = []
+#for cur_week in range(1, 16):
+#    week_punts = api_instance.get_plays(year = year, week = cur_week, team = 'UCLA', play_type = 52)
+#    all_punts += week_punts
 
 
 #for cur_punt in all_punts:
