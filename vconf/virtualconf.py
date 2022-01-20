@@ -10,6 +10,7 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 from monte_carlo import *
+import constants
 
 MAX_TEAM_LENGTH = 24
 
@@ -56,8 +57,7 @@ def find_mcc_games(api_instance, teams, cur_year) :
     return mcc_games
 
 def timesortfunc(mcc_game) :
-    fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
-    return datetime.strptime(mcc_game.start_date, fmt)
+    return datetime.strptime(mcc_game.start_date, constants.CFBD_DATE_FMT)
 
 class StandingsRecord:
     def __init__(self, wins, losses, team_name):
@@ -459,10 +459,9 @@ def find_vconf_games(configuration, teams, year, verbose):
 
     mcc_games = find_mcc_games(api_instance, curyear_teams, year)
     time_ordered_games = sorted(mcc_games.values(), reverse = False, key = timesortfunc)
-    fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
     any_games_in_future = False
     for cur_mcc_game in time_ordered_games:
-        game_time = datetime.strptime(cur_mcc_game.start_date, fmt)
+        game_time = datetime.strptime(cur_mcc_game.start_date, constants.CFBD_DATE_FMT)
         # the printed stamp is in UTC but strptime reads it as local, so we need to
         # surgically replace it at first and then re-interpret as local.
         #
