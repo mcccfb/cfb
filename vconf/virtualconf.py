@@ -11,6 +11,7 @@ from datetime import timedelta
 from datetime import timezone
 from monte_carlo import *
 import constants
+import schedule_maker
 
 MAX_TEAM_LENGTH = 24
 
@@ -35,11 +36,18 @@ def remove_fcs_teams(configuration, teams, cur_year):
     for fcs_team in fcs_teams :
         del teams[fcs_team]
 
+TESTING_SWITCH = False
 # teams = a dictionary of id->team_name of the teams we want in our conference
 #
 def find_mcc_games(api_instance, teams, cur_year) :
-    mcc_games = {}
+    if (TESTING_SWITCH):
+        #return schedule_maker.two_team_schedule_half_done()
+        return schedule_maker.three_team_tie()
+    else:
+        return games_db_query(api_instance, teams, cur_year)
 
+def games_db_query(api_instance, teams, cur_year):
+    mcc_games = {}
     for team_id in teams :
         #print("looking for " + teams[team_id])
         all_teams_games = api_instance.get_games(year=cur_year, team = teams[team_id])
