@@ -256,7 +256,7 @@ def break_ties(ordered_standings, mcc_games, log_q):
     if (total_teams <= 1):
         return True
 
-    for i in range(1, (total_teams -1)):
+    for i in range(1, total_teams):
         if (standings_sortfunc(ordered_standings[0]) == standings_sortfunc(ordered_standings[i])):
             count_tied_teams += 1
         else:
