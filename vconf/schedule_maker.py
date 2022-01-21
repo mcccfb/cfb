@@ -89,3 +89,25 @@ def three_team_tie():
     games[6] = create_game(6, team3[0], team3[1], team2[0], team2[1], 30, 20, create_date(10))
 
     return games
+
+# two good teams one bad
+#
+def two_team_tie_one_doormat():
+    games = {}
+    team1 = [ 24, 'Stanford']
+    team2 = [ 25, 'California' ]
+    team3 = [ 21, 'San Diego State' ]
+
+    # team 1 beats the other two
+    games[1] = create_game(1, team1[0], team1[1], team2[0], team2[1], 30, 20, create_date(15))
+    games[2] = create_game(2, team1[0], team1[1], team3[0], team3[1], 30, 20, create_date(14))
+
+    # team 2 gets two wins
+    games[3] = create_game(3, team2[0], team2[1], team1[0], team1[1], 30, 20, create_date(13))
+    games[4] = create_game(4, team2[0], team2[1], team3[0], team3[1], 30, 20, create_date(12))
+
+    # team 3 loses to everyone
+    games[5] = create_game(5, team3[0], team3[1], team1[0], team1[1], 20, 30, create_date(11))
+    games[6] = create_game(6, team3[0], team3[1], team2[0], team2[1], 20, 30, create_date(10))
+
+    return games
