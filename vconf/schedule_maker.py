@@ -115,7 +115,7 @@ def two_team_tie_one_doormat():
 def real_life_future_schedule():
     stanford = [ 24, 'Stanford']
     cal = [ 25, 'California' ]
-    team3 = [ 21, 'San Diego State' ]
+    sdst = [ 21, 'San Diego State' ]
     ucla = [ 26, 'UCLA']
     usc =  [ 30, 'USC' ]
     sjst = [ 23, 'San José State']
@@ -126,9 +126,11 @@ def real_life_future_schedule():
     games[2] = create_game(2, ucla[0], ucla[1], usc[0], usc[1], None, None, create_date(-101))
     games[3] = create_game(3, cal[0], cal[1], ucla[0], ucla[1], None, None, create_date(-102))
     games[4] = create_game(4, usc[0], usc[1], cal[0], cal[1], None, None, create_date(-103))
-    #games[5] = create_game(5, cal[0], cal[1], stanford[0], stanford[1], None, None, create_date(-105))
+    games[5] = create_game(5, cal[0], cal[1], stanford[0], stanford[1], None, None, create_date(-105))
     games[6] = create_game(6, usc[0], usc[1], stanford[0], stanford[1], None, None, create_date(-106))
     games[7] = create_game(7, fresno[0], fresno[1], sjst[0], sjst[1], None, None, create_date(-107))
     games[8] = create_game(8, usc[0], usc[1], fresno[0], fresno[1], None, None, create_date(-108))
-
+    games[9] = create_game(9, fresno[0], fresno[1], sdst[0], sdst[1], None, None, create_date(-109))
+    games[10] = create_game(10, sdst[0], sdst[1], sjst[0], sjst[1], None, None, create_date(-110))
+    
     return games
