@@ -260,7 +260,7 @@ def break_ties(ordered_standings, mcc_games, log_q):
         return True
 
     if (count_tied_teams > 3):
-        print(str(count_tied_teams) + " is too many tied teams for us!", file = sys.stderr)
+        log_q.append("TBRK " + str(count_tied_teams) + " is too many tied teams for us.")
         return False
 
     if (count_tied_teams == 3):
@@ -391,7 +391,8 @@ class PossibilityScoreboard:
 
     def __str__(self):
         s = self.name + " Simulation:\n"
-        for team in self.teams :
+        sorted_teams = sorted(self.teams.keys(), reverse = True, key = self.teams.__getitem__)
+        for team in sorted_teams :
             pct_win = self.teams[team] * 100 // self.total_trials
             s += team + " " + str(self.teams[team]) + " [" + str(pct_win) + "%]\n"
         if (self.no_winner > 0):
