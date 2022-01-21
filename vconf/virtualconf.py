@@ -161,62 +161,39 @@ def head_to_head_winner(team1, team2, all_games):
             pass
     return retval
 
-# return -1 if team 1 is winner, 1 if team2, 0 if tie    
-def common_opp_margin(team1, team2, all_games, log_q):
+# returns a dict of opponent->gross margin
+#
+def margins_by_opponent(all_games, team_id):
     oppos = {}
-    gross_margin_team1 = 0
-    
-    # first find all team1's margins
+
     for cur_mcc_game in all_games :
-        if (cur_mcc_game.home_team == team1) :
+        if (cur_mcc_game.home_team == team_id) :
             if (cur_mcc_game.away_id not in oppos):
                 oppos[cur_mcc_game.away_id] = 0
             oppos[cur_mcc_game.away_id] += (cur_mcc_game.home_points - cur_mcc_game.away_points)
-        elif (cur_mcc_game.away_team == team1) :
+        elif (cur_mcc_game.away_team == team_id) :
             if (cur_mcc_game.home_id not in oppos):
                 oppos[cur_mcc_game.home_id] = 0
             oppos[cur_mcc_game.home_id] += (cur_mcc_game.away_points - cur_mcc_game.home_points)
         else:
-            # team1 was not involved in this game
+            # team_id was not involved in this game
             pass
-    # now we have all team1's margins organized by opponent
-    log_q.append("TBRK oppo check for " + team1 + " and " + team2)
-    #print(oppos)
-    common_margins = {}
-    for cur_mcc_game in all_games :
-        if (cur_mcc_game.home_team == team2) :
-            if (cur_mcc_game.away_id in oppos):
-                # this is a common opponent with team2 as home team
-                if (cur_mcc_game.away_id not in common_margins):
-                    common_margins[cur_mcc_game.away_id] = 0
-                this_team2_margin = (cur_mcc_game.home_points - cur_mcc_game.away_points)
-                common_margins[cur_mcc_game.away_id] += this_team2_margin
-            else:
-                # team1 didn't play them
-                # print(team1 + " didn't play " + cur_mcc_game.away_id);
-                pass
-        elif (cur_mcc_game.away_team == team2) :
-            if (cur_mcc_game.home_id in oppos):
-                # this is a common opponent with team2 as away team
-                if (cur_mcc_game.home_id not in common_margins):
-                    common_margins[cur_mcc_game.home_id] = 0
-                this_team2_margin = (cur_mcc_game.away_points - cur_mcc_game.home_points)
-                common_margins[cur_mcc_game.home_id] += this_team2_margin
-            else:
-                # team1 didn't play them
-                # print(team1 + " didn't play " + cur_mcc_game.home_id);
-                pass
-        else:
-            # print(cur_mcc_game.home_team + " vs " + cur_mcc_game.away_team + " is not relevant")
-            # this is not a team2 game
-            pass
+    return oppos
 
-    # now we have all team1's margins and all team2's margins for shared opponents
+# return -1 if team 1 is winner, 1 if team2, 0 if tie
+def common_opp_margin(team1, team2, all_games, log_q):
+    oppos = {}
+    gross_margin_team1 = 0
 
-    for common_op in common_margins:
-        gross_margin_team1 += oppos[common_op] - common_margins[common_op]
+    t1_oppos = margins_by_opponent(all_games, team1)
+    t2_oppos = margins_by_opponent(all_games, team2)
 
-    log_q.append("gross margin for " + team1 + " vs " + team2 + " is " + str(gross_margin_team1))
+    # find intersections and total up
+    for t1_op in t1_oppos:
+        if (t1_op in t2_oppos):
+            gross_margin_team1 += (t1_oppos[t1_op] - t2_oppos[t1_op])
+
+    # log_q.append("gross margin for " + team1 + " vs " + team2 + " is " + str(gross_margin_team1))
 
     if (gross_margin_team1 < 0):
         return 1
