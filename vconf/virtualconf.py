@@ -43,7 +43,8 @@ def find_mcc_games(api_instance, teams, cur_year) :
     if (TESTING_SWITCH):
         #return schedule_maker.two_team_schedule()
         #return schedule_maker.two_team_schedule_half_done()
-        return schedule_maker.three_team_tie()
+        #return schedule_maker.three_team_tie()
+        return schedule_maker.two_team_tie_one_doormat()
     else:
         return games_db_query(api_instance, teams, cur_year)
 
@@ -181,13 +182,15 @@ def common_opp_margin(team1, team2, all_games, log_q):
     # now we have all team1's margins organized by opponent
     log_q.append("TBRK oppo check for " + team1 + " and " + team2)
     #print(oppos)
+    common_margins = {}
     for cur_mcc_game in all_games :
         if (cur_mcc_game.home_team == team2) :
             if (cur_mcc_game.away_id in oppos):
                 # this is a common opponent with team2 as home team
+                if (cur_mcc_game.away_id not in common_margins):
+                    common_margins[cur_mcc_game.away_id] = 0
                 this_team2_margin = (cur_mcc_game.home_points - cur_mcc_game.away_points)
-                gross_margin_team1 += (oppos[cur_mcc_game.away_id] - this_team2_margin)
-                #print("common oppo detected with " + cur_mcc_game.away_team + " gross team1 margin " + str(gross_margin_team1))
+                common_margins[cur_mcc_game.away_id] += this_team2_margin
             else:
                 # team1 didn't play them
                 # print(team1 + " didn't play " + cur_mcc_game.away_id);
@@ -195,9 +198,10 @@ def common_opp_margin(team1, team2, all_games, log_q):
         elif (cur_mcc_game.away_team == team2) :
             if (cur_mcc_game.home_id in oppos):
                 # this is a common opponent with team2 as away team
+                if (cur_mcc_game.home_id not in common_margins):
+                    common_margins[cur_mcc_game.home_id] = 0
                 this_team2_margin = (cur_mcc_game.away_points - cur_mcc_game.home_points)
-                gross_margin_team1 += (oppos[cur_mcc_game.home_id] - this_team2_margin)
-                #print("common oppo detected with " + cur_mcc_game.home_team + " gross team1 margin " + str(gross_margin_team1))
+                common_margins[cur_mcc_game.home_id] += this_team2_margin
             else:
                 # team1 didn't play them
                 # print(team1 + " didn't play " + cur_mcc_game.home_id);
@@ -206,6 +210,13 @@ def common_opp_margin(team1, team2, all_games, log_q):
             # print(cur_mcc_game.home_team + " vs " + cur_mcc_game.away_team + " is not relevant")
             # this is not a team2 game
             pass
+
+    # now we have all team1's margins and all team2's margins for shared opponents
+
+    for common_op in common_margins:
+        gross_margin_team1 += oppos[common_op] - common_margins[common_op]
+
+    log_q.append("gross margin for " + team1 + " vs " + team2 + " is " + str(gross_margin_team1))
 
     if (gross_margin_team1 < 0):
         return 1
