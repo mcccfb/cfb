@@ -41,6 +41,7 @@ TESTING_SWITCH = False
 #
 def find_mcc_games(api_instance, teams, cur_year) :
     if (TESTING_SWITCH):
+        #return schedule_maker.two_team_schedule()
         #return schedule_maker.two_team_schedule_half_done()
         return schedule_maker.three_team_tie()
     else:
@@ -167,9 +168,13 @@ def common_opp_margin(team1, team2, all_games, log_q):
     # first find all team1's margins
     for cur_mcc_game in all_games :
         if (cur_mcc_game.home_team == team1) :
-            oppos[cur_mcc_game.away_id] = (cur_mcc_game.home_points - cur_mcc_game.away_points)
+            if (cur_mcc_game.away_id not in oppos):
+                oppos[cur_mcc_game.away_id] = 0
+            oppos[cur_mcc_game.away_id] += (cur_mcc_game.home_points - cur_mcc_game.away_points)
         elif (cur_mcc_game.away_team == team1) :
-            oppos[cur_mcc_game.home_id] = (cur_mcc_game.away_points - cur_mcc_game.home_points)
+            if (cur_mcc_game.home_id not in oppos):
+                oppos[cur_mcc_game.home_id] = 0
+            oppos[cur_mcc_game.home_id] += (cur_mcc_game.away_points - cur_mcc_game.home_points)
         else:
             # team1 was not involved in this game
             pass
