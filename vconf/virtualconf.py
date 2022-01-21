@@ -44,7 +44,8 @@ def find_mcc_games(api_instance, teams, cur_year) :
         #return schedule_maker.two_team_schedule()
         #return schedule_maker.two_team_schedule_half_done()
         #return schedule_maker.three_team_tie()
-        return schedule_maker.two_team_tie_one_doormat()
+        #return schedule_maker.two_team_tie_one_doormat()
+        return schedule_maker.real_life_future_schedule()
     else:
         return games_db_query(api_instance, teams, cur_year)
 
@@ -259,7 +260,7 @@ def break_ties(ordered_standings, mcc_games, log_q):
         return True
 
     if (count_tied_teams > 3):
-        print(str(count_tied_teams) + " is too many tied teams for us!", stderr)
+        print(str(count_tied_teams) + " is too many tied teams for us!", file = sys.stderr)
         return False
 
     if (count_tied_teams == 3):
@@ -375,6 +376,7 @@ class PossibilityScoreboard:
         self.name = name
         self.teams = {}
         self.total_trials = 0
+        self.no_winner = 0
 
     def record_winner(self, winning_team):
         if (winning_team in self.teams):
@@ -383,11 +385,18 @@ class PossibilityScoreboard:
             self.teams[winning_team] = 1
         self.total_trials += 1
 
+    def record_no_winner(self):
+        self.total_trials += 1
+        self.no_winner += 1
+
     def __str__(self):
         s = self.name + " Simulation:\n"
         for team in self.teams :
             pct_win = self.teams[team] * 100 // self.total_trials
             s += team + " " + str(self.teams[team]) + " [" + str(pct_win) + "%]\n"
+        if (self.no_winner > 0):
+            pct_win = self.no_winner * 100 // self.total_trials
+            s += "No Winner " + str(self.no_winner) + " [" + str(pct_win) + "%]\n"
         return s
     
 def recursive_schedule_fill(time_sorted_games, cur_index, scoreboard):
@@ -396,8 +405,11 @@ def recursive_schedule_fill(time_sorted_games, cur_index, scoreboard):
         # add it to the scoreboard
         standings = build_standings(time_sorted_games)
         ordered_standings = sorted(standings.values(), reverse = True, key = standings_sortfunc)
-        break_ties(ordered_standings, time_sorted_games, [])
-        scoreboard.record_winner(ordered_standings[0].team_name)
+        if (check_minimum_wins(ordered_standings, [])):
+            if (break_ties(ordered_standings, time_sorted_games, [])):
+                scoreboard.record_winner(ordered_standings[0].team_name)
+                return
+        scoreboard.record_no_winner()
     else :
         # jump to the node in question and first fill in a home team win
         cur_mcc_game = time_sorted_games[cur_index]
@@ -436,8 +448,11 @@ def monte_carlo_simulation(time_sorted_games, predictor):
                 predictor.predict_game(cur_mcc_game)
         standings = build_standings(local_games_copy)
         ordered_standings = sorted(standings.values(), reverse = True, key = standings_sortfunc)
-        break_ties(ordered_standings, local_games_copy, [])
-        scoreboard.record_winner(ordered_standings[0].team_name)
+        if (check_minimum_wins(ordered_standings, [])):
+            if (break_ties(ordered_standings, local_games_copy, [])):
+                scoreboard.record_winner(ordered_standings[0].team_name)
+                continue
+        scoreboard.record_no_winner()
     print(str(scoreboard))
 
 def log_stderr_and_clear(log_q):
