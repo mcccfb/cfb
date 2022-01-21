@@ -19,6 +19,18 @@ def create_date(days_in_past):
     gameday = today - delta
     return gameday.strftime(constants.CFBD_DATE_FMT)
 
+def create_game(game_id, home_id, home_team, away_id, away_team, home_points, away_points, start_date):
+    game = cfbd.Game()
+    game.id = game_id
+    game.home_id = home_id
+    game.home_team = home_team
+    game.away_id = away_id
+    game.away_team = away_team
+    game.home_points = home_points
+    game.away_points = away_points
+    game.start_date = start_date
+    return game
+
 def two_team_schedule():
     games = {}
     team1 = [ 24, 'Stanford']
@@ -54,4 +66,26 @@ def two_team_schedule_half_done():
         else:
             cur_game.start_date = create_date(0 - game_id)
         games[game_id] = cur_game
+    return games
+
+# torture test where three teams play each other and split
+# everything
+def three_team_tie():
+    games = {}
+    team1 = [ 24, 'Stanford']
+    team2 = [ 25, 'California' ]
+    team3 = [ 21, 'San Diego State' ]
+
+    # team 1 beats the other two
+    games[1] = create_game(1, team1[0], team1[1], team2[0], team2[1], 30, 20, create_date(15))
+    games[2] = create_game(2, team1[0], team1[1], team3[0], team3[1], 30, 20, create_date(14))
+
+    # team 2 gets two wins
+    games[3] = create_game(3, team2[0], team2[1], team1[0], team1[1], 30, 20, create_date(13))
+    games[4] = create_game(4, team2[0], team2[1], team3[0], team3[1], 30, 20, create_date(12))
+
+    # team 3 gets two wins
+    games[5] = create_game(5, team3[0], team3[1], team1[0], team1[1], 30, 20, create_date(11))
+    games[6] = create_game(6, team3[0], team3[1], team2[0], team2[1], 30, 20, create_date(10))
+
     return games
