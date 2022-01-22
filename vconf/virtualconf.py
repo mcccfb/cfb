@@ -45,7 +45,8 @@ def find_mcc_games(api_instance, teams, cur_year) :
         #return schedule_maker.two_team_schedule_half_done()
         #return schedule_maker.three_team_tie()
         #return schedule_maker.two_team_tie_one_doormat()
-        return schedule_maker.real_life_future_schedule()
+        #return schedule_maker.real_life_future_schedule()
+        return schedule_maker.four_team_tie()
     else:
         return games_db_query(api_instance, teams, cur_year)
 
@@ -280,39 +281,40 @@ def break_ties(ordered_standings, mcc_games, log_q):
 #
 def break_three_team_tie(ordered_standings, mcc_games, log_q):
     dyads = [ [0,1], [0,2], [1,2]]
+    test_team1 = None
+    test_team2 = None
 
     for dyad in dyads:
-        h2h = head_to_head_winner(ordered_standings[dyad[0]].team_name,
-                                  ordered_standings[dyad[1]].team_name, mcc_games)
+        test_team1 = ordered_standings[dyad[0]].team_name
+        test_team2 = ordered_standings[dyad[1]].team_name
+        h2h = head_to_head_winner(test_team1, test_team2, mcc_games)
         broken = interpret_dyad_result(h2h, dyad, ordered_standings, log_q)
         if (broken):
-            log_q.append("TBRK 3-team tie broken by H2H for " + ordered_standings[dyad[0]].team_name + \
-                         " and " + ordered_standings[dyad[1]].team_name)                         
+            log_q.append("TBRK 3-team tie broken by H2H for " + test_team1 +
+                         " vs " + test_team2)
             return True
 
     for dyad in dyads:
-        oppo_check = common_opp_margin(ordered_standings[dyad[0]].team_name,
-                                       ordered_standings[dyad[1]].team_name,
-                                       mcc_games, log_q)
+        test_team1 = ordered_standings[dyad[0]].team_name
+        test_team2 = ordered_standings[dyad[1]].team_name
+        oppo_check = common_opp_margin(test_team1, test_team2, mcc_games, log_q)
         broken = interpret_dyad_result(oppo_check, dyad, ordered_standings, log_q)
         if (broken):
-            log_q.append("TBRK 3-team tie broken by common oppo for " + ordered_standings[dyad[0]].team_name + \
-                         " and " + ordered_standings[dyad[1]].team_name)            
+            log_q.append("TBRK 3-team tie broken by common oppo for " + test_team1 +
+                         " vs " + test_team2)
             return True
 
     for dyad in dyads:
-        total_check = total_margin(ordered_standings[dyad[0]].team_name,
-                                   ordered_standings[dyad[1]].team_name,
-                                   mcc_games, log_q)
+        test_team1 = ordered_standings[dyad[0]].team_name
+        test_team2 = ordered_standings[dyad[1]].team_name
+        total_check = total_margin(test_team1, test_team2, mcc_games, log_q)
         broken = interpret_dyad_result(total_check, dyad, ordered_standings, log_q)
         if (broken):
-            log_q.append("TBRK 3-team tie broken by total margin for " + ordered_standings[dyad[0]].team_name + \
-                         " and " + ordered_standings[dyad[1]].team_name)                        
+            log_q.append("TBRK 3-team tie broken by total margin for " + test_team1 +
+                         " vs " + team_team2)
             return True
 
     return False
-
-
 
 def interpret_dyad_result(result, dyad, ordered_standings, log_q):
     if (result == 0):
@@ -351,9 +353,11 @@ def break_two_team_tie(ordered_standings, mcc_games, log_q):
                                        mcc_games, log_q)
         if (oppo_check < 0) :
             # proper team is in first
+            log_q.append("TBRK tie broken by common opponent margin")
             return True
         elif (oppo_check > 0) :
             # promote second
+            log_q.append("TBRK tie broken by common opponent margin")
             promote_standings(ordered_standings, 1)
             return True
         else:
@@ -526,14 +530,13 @@ def find_vconf_games(configuration, teams, year, verbose):
 
     ties_ok = break_ties(ordered_standings, mcc_games.values(), log_q)
     log_stderr_and_clear(log_q)
+    if (verbose) :
+        print(str(year) + " final standings")
+        print()
+        for line in ordered_standings:
+            print(line)
+        print()
     if (ties_ok) :
-        if (verbose) :
-            print(str(year) + " final standings")
-            print()
-            for line in ordered_standings:
-                print(line)
-            print()
-
         print(str(year) + ", " + str(len(mcc_games)) + ", " + ordered_standings[0].team_name + ", " +
               ordered_standings[0].record_string())
         return True
