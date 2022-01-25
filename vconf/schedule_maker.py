@@ -156,3 +156,25 @@ def four_team_tie():
     games[9] = create_game(9, fresno[0], fresno[1], sdst[0], sdst[1], 18, 21, create_date(109))
     games[10] = create_game(10, sdst[0], sdst[1], sjst[0], sjst[1], 20, 34, create_date(110))
     return games
+
+def three_team_tie_circular_losses():
+    stanford = [ 24, 'Stanford']
+    cal = [ 25, 'California' ]
+    sdst = [ 21, 'San Diego State' ]
+    ucla = [ 26, 'UCLA']
+    usc =  [ 30, 'USC' ]
+    sjst = [ 23, 'San José State']
+    fresno = [ 278, 'Fresno State' ]
+
+    games = {}
+    games[1] = create_game(1, ucla[0], ucla[1], stanford[0], stanford[1], 30, 14, create_date(100))
+    games[2] = create_game(2, ucla[0], ucla[1], usc[0], usc[1], 31, 28, create_date(101))
+    games[3] = create_game(3, cal[0], cal[1], ucla[0], ucla[1], 24, 15, create_date(102))
+    games[4] = create_game(4, usc[0], usc[1], cal[0], cal[1], 8, 33, create_date(103))
+    games[5] = create_game(5, cal[0], cal[1], stanford[0], stanford[1], 12, 24, create_date(105))
+    games[6] = create_game(6, usc[0], usc[1], stanford[0], stanford[1], 20, 30, create_date(106))
+    games[7] = create_game(7, fresno[0], fresno[1], sjst[0], sjst[1], 40, 2, create_date(107))
+    games[8] = create_game(8, usc[0], usc[1], fresno[0], fresno[1], 33, 23, create_date(108))
+    games[9] = create_game(9, fresno[0], fresno[1], sdst[0], sdst[1], 18, 21, create_date(109))
+    games[10] = create_game(10, sdst[0], sdst[1], sjst[0], sjst[1], 20, 34, create_date(110))
+    return games
