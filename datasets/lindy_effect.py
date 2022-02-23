@@ -36,10 +36,14 @@ class LifespanRecord:
         txt_spans = self.raw_spans.split("; ")
         for t in txt_spans:
             start_end = t.split("-")
-            if (len(start_end) != 2):
+            if (len(start_end) == 1):
+                start = start_end[0]
+                end = start_end[0]
+            elif (len(start_end) == 2):
+                start = start_end[0]
+                end = start_end[1]
+            else:
                 return False
-            start = start_end[0]
-            end = start_end[1]
             if (not start.isnumeric()):
                 return false
             if (not end.isnumeric()):
@@ -60,22 +64,14 @@ with open('1971_program_lifespans.csv', 'r') as file:
         if (rownum == 1):
             continue
         all_records.append(LifespanRecord(cur_row[0], cur_row[1]))
-        print(cur_row)
-
-
-
-# parse the ranges into range buckets
-
-
-# pull each line/range into gant record
-
 
 gant_array = []
 present_day = datetime.strftime(date.today(), "%Y-%m-%d")
-print(present_day)
+#print(present_day)
 
 for record in all_records:
     if (not record.valid):
+        print("Skipping invalid record " + record.program_name)
         continue
     task_count = 0
     for span in record.spans:
@@ -95,7 +91,3 @@ for record in all_records:
 df = pd.DataFrame(gant_array)
 fig = px.timeline(df, x_start = "Start", x_end = "Finish", y = "Program", color = "Program")
 fig.show()
-
-
-
-# add all to a chart and display
