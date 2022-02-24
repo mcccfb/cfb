@@ -9,8 +9,6 @@ from datetime import date
 import plotly.express as px
 import pandas as pd
 
-# read the csv into records
-
 class Span:
     def __init__(self, start, end, to_present):
         self.start = start
@@ -54,7 +52,19 @@ class LifespanRecord:
             else:
                 self.spans.append(Span(int(start), int(end), False))
         return True
-        
+
+
+def total_years(lsrec):
+    this_year = date.today().year
+    total_years = 0
+    for span in lsrec.spans:
+        if (span.to_present):
+            total_years += (this_year - span.start) + 1
+        else:
+            total_years += (span.end - span.start) + 1
+    return total_years
+
+
 all_records = []
 rownum=0
 with open('1971_program_lifespans.csv', 'r') as file:
@@ -64,6 +74,8 @@ with open('1971_program_lifespans.csv', 'r') as file:
         if (rownum == 1):
             continue
         all_records.append(LifespanRecord(cur_row[0], cur_row[1]))
+
+all_records.sort(key = total_years)
 
 gant_array = []
 present_day = datetime.strftime(date.today(), "%Y-%m-%d")
