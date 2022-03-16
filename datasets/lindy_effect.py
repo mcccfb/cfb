@@ -8,6 +8,7 @@ from datetime import datetime
 from datetime import date
 import plotly.express as px
 import pandas as pd
+import statistics
 
 class Span:
     def __init__(self, start, end, to_present):
@@ -100,6 +101,120 @@ for record in all_records:
                                Program = record.program_name))
 
 
-df = pd.DataFrame(gant_array)
-fig = px.timeline(df, x_start = "Start", x_end = "Finish", y = "Program", color = "Program")
+#df = pd.DataFrame(gant_array)
+#fig = px.timeline(df, x_start = "Start", x_end = "Finish", y = "Program", color = "Program")
+#fig.show()
+
+pre_1971_years = {}
+post_1971_years = {}
+dead = []
+alive = []
+this_year = date.today().year
+for record in all_records:
+    if (not record.valid):
+        print("Skipping invalid record " + record.program_name)
+        continue
+    pre_71 = 0
+    post_71 = 0
+    currently_alive = False
+    for span in record.spans:
+        # total up pre-1971 years
+        if (span.start < 1971):
+            if (span.to_present):
+                pre_71 += (1971 - span.start)
+                post_71 += (this_year - 1971)
+                currently_alive = True
+            elif (span.end > 1971):
+                pre_71 += (1971 - span.start)
+                post_71 += (span.end - 1971) + 1
+            else:
+                pre_71 += span.end - span.start + 1
+        else:
+            if (span.to_present):
+                post_71 += this_year - 1971 + 1
+                currently_alive = True
+            else:
+                post_71 += span.end - 1971 + 1
+    pre_1971_years[record.program_name] = pre_71
+    post_1971_years[record.program_name] = post_71
+    if (currently_alive):
+        alive.append(record.program_name)
+    else:
+        dead.append(record.program_name)
+
+print(pre_1971_years)
+print(alive)
+print(dead)
+
+working = []
+for team in alive:
+    working.append(pre_1971_years[team])
+print("mean of live = " + str(statistics.mean(working)))
+print("median of live = " + str(statistics.median(working)))
+
+working = []
+for team in dead:
+    working.append(pre_1971_years[team])
+print("mean of dead = " + str(statistics.mean(working)))
+print("median of dead = " + str(statistics.median(working)))
+
+scatter_array = []
+for team in alive:
+    scatter_array.append(dict(Program = team,
+                              pre_71 = pre_1971_years[team],
+                              post_71 = post_1971_years[team],
+                              text = team,
+                              Size = 1,
+                              alive = True))
+for team in dead:
+    scatter_array.append(dict(Program = team,
+                              pre_71 = pre_1971_years[team],
+                              post_71 = post_1971_years[team],
+                              text = team,
+                              Size = 1,
+                              alive = False))
+
+df = pd.DataFrame(scatter_array)
+fig = px.scatter(df, y = "pre_71", x = "post_71", color = "alive", \
+                 trendline="ols", \
+                 size = "Size", \
+                 text = "text", \
+                 hover_data = {'Program' : False , 'Size' : False, 'alive' : False})
 fig.show()
+
+all_predictions = []
+
+# monkey test dyads
+total_recs = len(all_records)
+count_dyads = 0
+count_ties = 0
+count_correct = 0
+for i in range(0, total_recs):
+    for j in range((i + 1), total_recs):
+        dyad = [all_records[i].program_name, all_records[j].program_name]
+        result = "";
+        prediction = ""
+        if (pre_1971_years[dyad[0]] > pre_1971_years[dyad[1]]):
+            prediction = "A"
+        elif (pre_1971_years[dyad[1]] > pre_1971_years[dyad[0]]):
+            prediction = "B"
+        else:
+             prediction = "T" 
+                                
+        if (post_1971_years[dyad[0]] > post_1971_years[dyad[1]]):
+            result = "A"
+        elif (post_1971_years[dyad[1]] > post_1971_years[dyad[0]]):
+            result = "B"
+        else:
+            result = "T"
+            count_ties += 1
+        print("dyad : " + dyad[0] + " vs " + dyad[1] + " prediction: " + prediction + " result: " + result)
+        count_dyads += 1
+        if (prediction == result):
+            count_correct += 1
+
+
+print("total dyads " + str(count_dyads))
+print("total ties " + str(count_ties))
+print("total correct predictions " + str(count_correct))
+
