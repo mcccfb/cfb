@@ -175,8 +175,10 @@ for team in dead:
                               alive = False))
 
 df = pd.DataFrame(scatter_array)
-fig = px.scatter(df, y = "pre_71", x = "post_71", color = "alive", \
+fig = px.scatter(df, y = "pre_71", x = "post_71", \
+                 color = "alive", \
                  trendline="ols", \
+                 trendline_scope = "overall", \
                  size = "Size", \
                  text = "text", \
                  hover_data = {'Program' : False , 'Size' : False, 'alive' : False})
