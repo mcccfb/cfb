@@ -80,12 +80,14 @@ class Elo_Predictor(MC_Predictor):
 
     def predict_game(self, game):
         if game.home_team not in self.elo_dict:
-            home_elo = 1400
+            raise IndexError("no Elo for " + game.home_team)
+            return
         else:
             home_elo_entry = self.elo_dict[game.home_team]
             home_elo = home_elo_entry.elo
         if game.away_team not in self.elo_dict:
-            away_elo = 1400
+            raise IndexError("no Elo for " + game.away_team)
+            return
         else:
             away_elo_entry = self.elo_dict[game.away_team]
             away_elo = away_elo_entry.elo

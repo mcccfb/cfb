@@ -46,7 +46,8 @@ def find_mcc_games(api_instance, teams, cur_year) :
         #return schedule_maker.three_team_tie()
         #return schedule_maker.two_team_tie_one_doormat()
         #return schedule_maker.real_life_future_schedule()
-        return schedule_maker.four_team_tie()
+        #return schedule_maker.four_team_tie()
+        return schedule_maker.three_team_tie_circular_losses()
     else:
         return games_db_query(api_instance, teams, cur_year)
 
@@ -450,7 +451,12 @@ def monte_carlo_simulation(time_sorted_games, predictor):
             local_games_copy.append(copy.copy(cur_source_game))
         for cur_mcc_game in local_games_copy:
             if (cur_mcc_game.away_points is None) :
-                predictor.predict_game(cur_mcc_game)
+                try:
+                    predictor.predict_game(cur_mcc_game)
+                except IndexError as e:
+                    print("At least one missing element error prevents " + str(predictor) + " from finishing: ")
+                    print(e)
+                    return
         standings = build_standings(local_games_copy)
         ordered_standings = sorted(standings.values(), reverse = True, key = standings_sortfunc)
         if (check_minimum_wins(ordered_standings, [])):
