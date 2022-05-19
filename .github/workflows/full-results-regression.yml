@@ -34,4 +34,4 @@ jobs:
         run: echo "::set-output name=md5_out::"`/usr/bin/md5sum output.txt`
       - name: Pass or fail
         run: |
-          if [[ "${{ steps.check_md5.outputs.md5_out }}" == "7de220da82eb846c3c806e06f5da209a  output.txt" ]]; then exit 0; else exit 1; fi
+          if [[ "${{ steps.check_md5.outputs.md5_out }}" == "7de220da82eb846c3c806e06f5da209a output.txt" ]]; then exit 0; else exit 1; fi
