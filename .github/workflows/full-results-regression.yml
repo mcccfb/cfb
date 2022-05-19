@@ -3,7 +3,7 @@ name: Install python and run a test
 on:
   push:
   schedule:
-      - cron: '45 17 * * *'
+      - cron: '51 0 * * *'
 
 env:
   CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
