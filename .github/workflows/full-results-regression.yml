@@ -26,4 +26,6 @@ jobs:
       - name: Install dependencies
         run: python -m pip install --upgrade pip cfbd
       - name: Run the code
-        run: python vconf/mcc_schedule.py -s 1970 -e 1980
+        run: python vconf/mcc_schedule.py -s 1970 -e 2000 > output.txt
+      - name: md5_results
+        run: md5 output.txt
