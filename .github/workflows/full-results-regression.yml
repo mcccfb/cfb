@@ -7,6 +7,7 @@ on:
 
 env:
   CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+  RESULTS_MD5: 7de220da82eb846c3c806e06f5da209a
 
 jobs:
   build:
@@ -29,9 +30,11 @@ jobs:
         run: python vconf/mcc_schedule.py -s 1970 -e 2000 > output.txt
       - name: md5_results
         run: /usr/bin/md5sum output.txt
+      - name: show_full_results
+        run: /usr/bin/cat output.txt
       - name: Check md5
         id: check_md5
-        run: echo "::set-output name=md5_out::"`/usr/bin/md5sum output.txt`
+        run: echo "::set-output name=md5_out::"`/usr/bin/md5sum output.txt | /usr/bin/cut -d ' ' -f 1`
       - name: Pass or fail
         run: |
-          if [[ "${{ steps.check_md5.outputs.md5_out }}" == "7de220da82eb846c3c806e06f5da209a output.txt" ]]; then exit 0; else exit 1; fi
+          if [[ "${{ steps.check_md5.outputs.md5_out }}" == "$RESULTS_MD5" ]]; then exit 0; else exit 1; fi
