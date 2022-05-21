@@ -7,7 +7,7 @@ on:
 
 env:
   CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
-  RESULTS_MD5: 7de220da82eb846c3c806e06f5da209a
+  RESULTS_MD5: 00a49670f815285f56f4018f5ed77395
 
 jobs:
   build:
