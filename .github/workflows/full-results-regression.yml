@@ -1,4 +1,4 @@
-name: Install python and run a test
+name: Regression test on 50 years of MCC results 
 
 on:
   push:
