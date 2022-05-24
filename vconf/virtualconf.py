@@ -474,7 +474,8 @@ def log_stderr_and_clear(log_q):
 def find_vconf_games(configuration, teams, year, verbose):
 
     curyear_teams = teams.copy()
-    remove_fcs_teams(configuration, curyear_teams, year)
+    if (not TESTING_SWITCH):
+        remove_fcs_teams(configuration, curyear_teams, year)
     
     api_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
     
