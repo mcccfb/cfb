@@ -6,7 +6,9 @@
 #
 import time
 from datetime import date
+from datetime import datetime
 from datetime import timedelta
+from datetime import timezone
 import constants
 import cfbd
 
@@ -25,7 +27,9 @@ def create_date(days_in_past):
 # useful for deterministic testing output
 #
 def create_fixed_date(days_in_past):
-    baseline = date.fromtimestamp(TEST_GAME_TIMESTAMP)
+    baseline = datetime.fromtimestamp(TEST_GAME_TIMESTAMP)
+    utc_timez = timezone(timedelta(hours = 0))
+    baseline.replace(tzinfo = utc_timez)
     delta = timedelta(days = days_in_past)
     gameday = baseline - delta
     return gameday.strftime(constants.CFBD_DATE_FMT)
