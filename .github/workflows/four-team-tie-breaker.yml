@@ -1,11 +1,11 @@
-name: Two team tie breaker
+name: Four team tie breaker
 
 on: push
 
 env:
   MCC_TESTING: 1
-  MCC_TEST_TYPE: MCC_TEST_3TEAM_TIE
-  RESULTS_MD5: 1cb96b2feb08e55c529bd37c869aa4f6
+  MCC_TEST_TYPE: MCC_TEST_4TEAM_TIE
+  RESULTS_MD5: a9b9fd0c08b3ac33d6d6054bfa87b86d
   
 defaults:
   run:
