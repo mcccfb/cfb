@@ -16,7 +16,16 @@ configuration.api_key_prefix['Authorization'] = 'Bearer'
 all_ca_teams = {25: 'California', 278: 'Fresno State', 16: 'Sacramento State',
                 21: 'San Diego State', 23: 'San José State', 24: 'Stanford',
                 302: 'UC Davis', 26: 'UCLA', 30: 'USC',
-                1000003: 'Santa Clara', 1000004: 'San Francisco', 1000920: 'Saint Mary\'s',
+                1000003: 'Santa Clara', 1000004: 'San Francisco', 1000051: 'Saint Mary\'s',
+                # WWII camps
+                1000065: 'Saint Mary\'s (CA) Pre-Flight',
+                1000008: 'Alameda Coast Guard',
+                1000819: 'Fleet City',
+                1000801: 'San Diego Navy',
+                1000037: 'March Field',
+                1000828: 'El Toro Marines',
+                1000820: 'San Diego Bombers (PCFL)',
+                
                 1000034: 'Loyola Marymount', 1000044: 'Pacific', 1000867: 'Pepperdine',
                 1000007: 'California-Santa Barbara', 1000888: 'San Francisco State',
                 1000006: 'Long Beach State', 1000012: 'Cal State Fullerton',
