@@ -25,6 +25,7 @@ all_ca_teams = {25: 'California', 278: 'Fresno State', 16: 'Sacramento State',
                 1000037: 'March Field',
                 1000828: 'El Toro Marines',
                 1000820: 'San Diego Bombers (PCFL)',
+                1000018: 'Del Monte Pre-Flight',
                 
                 1000034: 'Loyola Marymount', 1000044: 'Pacific', 1000867: 'Pepperdine',
                 1000007: 'California-Santa Barbara', 1000888: 'San Francisco State',
@@ -39,6 +40,19 @@ all_tx_teams = {249: 'North Texas', 2628: 'TCU', 251: 'Texas', 245: 'Texas A&M',
                 326: 'Texas State', 242: 'Rice'
                 }
 
+actual_pac_12 = {25: 'California',
+                 24: 'Stanford',
+                 26: 'UCLA', 30: 'USC',
+                 12: 'Arizona',
+                 9: 'Arizona State',
+                 28: 'Colorado',
+                 2483: 'Oregon',
+                 204: 'Oregon State',
+                 254: 'Utah',
+                 264: 'Washington',
+                 265: 'Washington State'
+                 }
+    
 this_year = date.today().year
 
 parser = argparse.ArgumentParser()
