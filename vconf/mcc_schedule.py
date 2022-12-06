@@ -52,6 +52,16 @@ actual_pac_12 = {25: 'California',
                  264: 'Washington',
                  265: 'Washington State'
                  }
+
+preset_confs = { 'CALIFORNIA': all_ca_teams,
+                 'TEXAS' : all_tx_teams,
+                 'PAC_12' : actual_pac_12,
+                 }
+
+if ('MCC_CONFERENCE' in os.environ and os.environ['MCC_CONFERENCE'] in preset_confs):
+    use_teams = preset_confs[os.environ['MCC_CONFERENCE']]
+else:
+    use_teams = all_ca_teams
     
 this_year = date.today().year
 
@@ -62,4 +72,4 @@ parser.add_argument('--end', '-e', type = int, default = this_year, help = "Last
 args = parser.parse_args()
 
 for cur_year in range(args.start, args.end + 1) :
-    find_vconf_games(configuration, teams = all_ca_teams, year = cur_year, verbose = args.verbose)
+    find_vconf_games(configuration, teams = use_teams, year = cur_year, verbose = args.verbose)
