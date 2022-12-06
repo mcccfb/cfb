@@ -459,12 +459,21 @@ def monte_carlo_simulation(time_sorted_games, predictor):
         scoreboard.record_no_winner()
     print(str(scoreboard))
 
+def find_coach(configuration, team_name, year):
+    api_instance = cfbd.CoachesApi(cfbd.ApiClient(configuration))
+    coach_list = api_instance.get_coaches(team=team_name, year=year)
+    if (len(coach_list) >= 1):
+        res = coach_list[0].first_name + ' ' + coach_list[0].last_name
+        return res
+    else:
+        return "No coach found"
+
 def log_stderr_and_clear(log_q):
     for logline in log_q:
         print(logline, file = sys.stderr)
     log_q.clear()
 
-def find_vconf_games(configuration, teams, year, verbose):
+def find_vconf_games(configuration, teams, year, verbose, show_coach):
 
     curyear_teams = teams.copy()
     if (not testing_control.testing_active()):
@@ -537,8 +546,12 @@ def find_vconf_games(configuration, teams, year, verbose):
             print(line)
         print()
     if (ties_ok) :
-        print(str(year) + ", " + str(len(mcc_games)) + ", " + ordered_standings[0].team_name + ", " +
-              ordered_standings[0].record_string())
+        final_log_line = str(year) + ", " + str(len(mcc_games)) + ", " + \
+            ordered_standings[0].team_name + ", " + ordered_standings[0].record_string()
+        if (show_coach):
+            coach = find_coach(configuration, ordered_standings[0].team_name, year)
+            final_log_line += ", " + coach
+        print(final_log_line)
         return True
     else:
         print("could not resolve a winner for " + str(year), file = sys.stderr)

@@ -69,7 +69,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--verbose', '-v', action = 'store_true')
 parser.add_argument('--start', '-s', type = int, default = this_year, help = "First year of range")
 parser.add_argument('--end', '-e', type = int, default = this_year, help = "Last year of range")
+parser.add_argument('--coach', '-c', action = 'store_true')
 args = parser.parse_args()
 
 for cur_year in range(args.start, args.end + 1) :
-    find_vconf_games(configuration, teams = use_teams, year = cur_year, verbose = args.verbose)
+    find_vconf_games(configuration, teams = use_teams, year = cur_year, verbose = args.verbose, \
+                     show_coach = args.coach)
