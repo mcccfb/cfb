@@ -36,7 +36,7 @@ jobs:
         run: /usr/bin/cat output.txt
       - name: Check md5
         id: check_md5
-        run: echo "::set-output name=md5_out::"`/usr/bin/md5sum output.txt | /usr/bin/cut -d ' ' -f 1`
+        run: echo "md5_out="`/usr/bin/md5sum output.txt | /usr/bin/cut -d ' ' -f 1` >> $GITHUB_ENV
       - name: Pass or fail
         run: |
-          if [[ "${{ steps.check_md5.outputs.md5_out }}" == "$RESULTS_MD5" ]]; then exit 0; else exit 1; fi
+          if [[ "${{ env.md5_out }}" == "$RESULTS_MD5" ]]; then exit 0; else exit 1; fi
