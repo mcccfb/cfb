@@ -66,10 +66,10 @@ else:
 this_year = date.today().year
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--verbose', '-v', action = 'store_true')
+parser.add_argument('--verbose', '-v', action = 'store_true', help = "Show all game results")
 parser.add_argument('--start', '-s', type = int, default = this_year, help = "First year of range")
 parser.add_argument('--end', '-e', type = int, default = this_year, help = "Last year of range")
-parser.add_argument('--coach', '-c', action = 'store_true')
+parser.add_argument('--coach', '-c', action = 'store_true', help = "Show coach name on year summary")
 args = parser.parse_args()
 
 for cur_year in range(args.start, args.end + 1) :
