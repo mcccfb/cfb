@@ -387,15 +387,17 @@ class PossibilityScoreboard:
         self.total_trials += 1
         self.no_winner += 1
 
+    def readable_percent(self, sample_count):
+        return(str(int(round(sample_count * 100.0 / self.total_trials, 0))))
+
     def __str__(self):
         s = self.name + " Simulation:\n"
         sorted_teams = sorted(self.teams.keys(), reverse = True, key = self.teams.__getitem__)
         for team in sorted_teams :
-            pct_win = self.teams[team] * 100 // self.total_trials
-            s += team + " " + str(self.teams[team]) + " [" + str(pct_win) + "%]\n"
+            s += team + " " + str(self.teams[team]) + " [" + self.readable_percent(self.teams[team]) + "%]\n"
         if (self.no_winner > 0):
-            pct_win = self.no_winner * 100 // self.total_trials
-            s += "No Winner " + str(self.no_winner) + " [" + str(pct_win) + "%]\n"
+            print("total trials for no winner: " + str(self.total_trials))
+            s += "No Winner " + str(self.no_winner) + " [" + self.readable_percent(self.no_winner) + "%]\n"
         return s
     
 def recursive_schedule_fill(time_sorted_games, cur_index, scoreboard):
