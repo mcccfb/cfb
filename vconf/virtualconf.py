@@ -396,7 +396,6 @@ class PossibilityScoreboard:
         for team in sorted_teams :
             s += team + " " + str(self.teams[team]) + " [" + self.readable_percent(self.teams[team]) + "%]\n"
         if (self.no_winner > 0):
-            print("total trials for no winner: " + str(self.total_trials))
             s += "No Winner " + str(self.no_winner) + " [" + self.readable_percent(self.no_winner) + "%]\n"
         return s
     
