@@ -305,7 +305,7 @@ def break_three_team_tie(ordered_standings, mcc_games, log_q):
         broken = interpret_dyad_result(total_check, dyad, ordered_standings, log_q)
         if (broken):
             log_q.append("TBRK 3-team tie broken by total margin for " + test_team1 +
-                         " vs " + team_team2)
+                         " vs " + test_team2)
             return True
 
     return False
