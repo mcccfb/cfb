@@ -18,33 +18,54 @@ TEST_GAME_TIMESTAMP = 1653368232
 # negative past means date is in the future.
 #
 def create_date(days_in_past):
-    today = date.today()
+    today = datetime.now(timezone.utc)
     delta = timedelta(days=days_in_past)
-    gameday = today - delta
-    return gameday.strftime(constants.CFBD_DATE_FMT)
+    return today - delta
 
 # deterministic version that creates dates based on a defined constant
 # useful for deterministic testing output
 #
 def create_fixed_date(days_in_past):
-    baseline = datetime.fromtimestamp(TEST_GAME_TIMESTAMP)
-    utc_timez = timezone(timedelta(hours = 0))
-    baseline.replace(tzinfo = utc_timez)
-    delta = timedelta(days = days_in_past)
-    gameday = baseline - delta
-    return gameday.strftime(constants.CFBD_DATE_FMT)
+    baseline = datetime.fromtimestamp(TEST_GAME_TIMESTAMP, tz=timezone.utc)
+    delta = timedelta(days=days_in_past)
+    return baseline - delta
 
 def create_game(game_id, home_id, home_team, away_id, away_team, home_points, away_points, start_date):
-    game = cfbd.Game()
-    game.id = game_id
-    game.home_id = home_id
-    game.home_team = home_team
-    game.away_id = away_id
-    game.away_team = away_team
-    game.home_points = home_points
-    game.away_points = away_points
-    game.start_date = start_date
-    return game
+    return cfbd.Game(
+        id=game_id,
+        season=date.today().year,
+        season_type='regular',
+        start_date=start_date,
+        start_time_tbd=False,
+        completed=True if home_points is not None else False,
+        neutral_site=False,
+        conference_game=False,
+        attendance=0,
+        venue_id=None,
+        venue="Test Venue",
+        home_id=home_id,
+        home_team=home_team,
+        home_conference="Test Conference",
+        home_classification="fbs",
+        home_points=home_points,
+        home_line_scores=[],
+        home_postgame_win_probability=None,
+        home_pregame_elo=None,
+        home_postgame_elo=None,
+        away_id=away_id,
+        away_team=away_team,
+        away_conference="Test Conference",
+        away_classification="fbs",
+        away_points=away_points,
+        away_line_scores=[],
+        away_postgame_win_probability=None,
+        away_pregame_elo=None,
+        away_postgame_elo=None,
+        excitement_index=None,
+        highlights=None,
+        notes=None,
+        week=1
+    )
 
 # two teams, one teams wins everything.
 # team 1 should be the winner
@@ -54,16 +75,16 @@ def two_team_schedule():
     team1 = [ 24, 'Stanford']
     team2 = [ 25, 'California' ]
     for game_id in range(1, 14):
-        cur_game = cfbd.Game()
-        cur_game.id = game_id
-        cur_game.start_date = create_fixed_date(100 - game_id)
-        cur_game.home_id = team1[0]
-        cur_game.home_team = team1[1]
-        cur_game.home_points = 24
-        cur_game.away_id = team2[0]
-        cur_game.away_team = team2[1]
-        cur_game.away_points = 7
-        games[game_id] = cur_game
+        games[game_id] = create_game(
+            game_id=game_id,
+            home_id=team1[0],
+            home_team=team1[1],
+            away_id=team2[0],
+            away_team=team2[1],
+            home_points=24,
+            away_points=7,
+            start_date=create_fixed_date(100 - game_id)
+        )
     return games
 
 def two_team_schedule_half_done():
@@ -71,19 +92,20 @@ def two_team_schedule_half_done():
     team1 = [ 24, 'Stanford']
     team2 = [ 25, 'California' ]
     for game_id in range(1, 15):
-        cur_game = cfbd.Game()
-        cur_game.id = game_id
-        cur_game.home_id = team1[0]
-        cur_game.home_team = team1[1]
-        cur_game.away_id = team2[0]
-        cur_game.away_team = team2[1]
-        if (game_id < 7):
-            cur_game.start_date = create_date(100 - game_id)
-            cur_game.home_points = 24
-            cur_game.away_points = 7
-        else:
-            cur_game.start_date = create_date(0 - game_id)
-        games[game_id] = cur_game
+        home_points = 24 if game_id < 7 else None
+        away_points = 7 if game_id < 7 else None
+        start_date = create_date(100 - game_id) if game_id < 7 else create_date(0 - game_id)
+        
+        games[game_id] = create_game(
+            game_id=game_id,
+            home_id=team1[0],
+            home_team=team1[1],
+            away_id=team2[0],
+            away_team=team2[1],
+            home_points=home_points,
+            away_points=away_points,
+            start_date=start_date
+        )
     return games
 
 # torture test where three teams play each other and split
