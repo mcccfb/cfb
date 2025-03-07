@@ -48,7 +48,7 @@ def games_db_query(api_instance, teams, cur_year):
     mcc_games = {}
     for team_id in teams :
         #print("looking for " + teams[team_id])
-        all_teams_games = api_instance.get_games(year=cur_year, team = teams[team_id])
+        all_teams_games = api_instance.get_games(year=cur_year, team=teams[team_id], season_type='regular')
         for cur_game in all_teams_games :
             #print(cur_game)
             other_team_id = -1
@@ -63,7 +63,7 @@ def games_db_query(api_instance, teams, cur_year):
     return mcc_games
 
 def timesortfunc(mcc_game) :
-    return datetime.strptime(mcc_game.start_date, constants.CFBD_DATE_FMT)
+    return mcc_game.start_date
 
 class StandingsRecord:
     def __init__(self, wins, losses, team_name):
@@ -482,23 +482,19 @@ def find_vconf_games(configuration, teams, year, verbose, show_coach):
     
     api_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
     
-    today = datetime.utcnow()
+    today = datetime.utcnow().replace(tzinfo=timezone.utc)
     log_q = []
 
     pac_timez = timezone(timedelta(hours = -8))
-    utc_timez = timezone(timedelta(hours = 0))
 
     mcc_games = find_mcc_games(api_instance, curyear_teams, year)
     time_ordered_games = sorted(mcc_games.values(), reverse = False, key = timesortfunc)
     any_games_in_future = False
     for cur_mcc_game in time_ordered_games:
-        game_time = datetime.strptime(cur_mcc_game.start_date, constants.CFBD_DATE_FMT)
-        # the printed stamp is in UTC but strptime reads it as local, so we need to
-        # surgically replace it at first and then re-interpret as local.
-        #
-        pac_game_time = game_time.replace(tzinfo = utc_timez).astimezone(pac_timez)
+        # start_date is already a datetime, just need to convert timezone
+        pac_game_time = cur_mcc_game.start_date.astimezone(pac_timez)
         pretty_date = datetime.strftime(pac_game_time, "%b %d, %Y")
-        if (game_time > today) :
+        if (cur_mcc_game.start_date > today) :
             any_games_in_future = True
             if (verbose) :
                 print (cur_mcc_game.away_team + " at " +

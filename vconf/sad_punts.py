@@ -8,18 +8,18 @@ from punts import print_punt
 # export CFBD_API_KEY='my_long_secret_here'
 #
 
-configuration = cfbd.Configuration()
-configuration.api_key['Authorization'] = os.environ.get('CFBD_API_KEY')
-configuration.api_key_prefix['Authorization'] = 'Bearer'
+configuration = cfbd.Configuration(
+    access_token = os.environ.get('CFBD_API_KEY')
+)
 
-year = 2021
-week = 6
+year = 2022
+week = 2
 top_n = 20
 
 # note that week and year are required for the API
 api_instance = cfbd.PlaysApi(cfbd.ApiClient(configuration))
 #all_punts = api_instance.get_plays(year = year, week = week, team = 'Stanford', play_type = 52)
-all_punts = api_instance.get_plays(year = year, week = week, play_type = 52)
+all_punts = api_instance.get_plays(year=year, week=week, play_type=52, season_type='regular')
 #year_punts = api_instance.get_plays(year = year, week = week, play_type = 52)
 
 #all_punts = []

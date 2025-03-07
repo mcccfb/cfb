@@ -9,9 +9,9 @@ from datetime import date
 from virtualconf import find_vconf_games
 import argparse
 
-configuration = cfbd.Configuration()
-configuration.api_key['Authorization'] = os.environ.get('CFBD_API_KEY')
-configuration.api_key_prefix['Authorization'] = 'Bearer'
+configuration = cfbd.Configuration(
+    access_token = os.environ.get('CFBD_API_KEY')
+)
 
 all_ca_teams = {25: 'California', 278: 'Fresno State', 16: 'Sacramento State',
                 21: 'San Diego State', 23: 'San José State', 24: 'Stanford',

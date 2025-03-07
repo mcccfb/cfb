@@ -11,9 +11,9 @@ from virtualconf import find_mcc_games
 import argparse
 from elo import p_win_elo
 
-configuration = cfbd.Configuration()
-configuration.api_key['Authorization'] = os.environ.get('CFBD_API_KEY')
-configuration.api_key_prefix['Authorization'] = 'Bearer'
+configuration = cfbd.Configuration(
+    access_token = os.environ.get('CFBD_API_KEY')
+)
 
 all_ca_teams = {25: 'California', 278: 'Fresno State', 16: 'Sacramento State',
                 21: 'San Diego State', 23: 'San José State', 24: 'Stanford',
@@ -59,7 +59,7 @@ def get_vconf_games(year, configuration):
 
 def get_conf_games(year, conf_abbrev, configuration):
     api_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
-    all_conf_games = api_instance.get_games(year=cur_year, conference = conf_abbrev)
+    all_conf_games = api_instance.get_games(year=cur_year, conference=conf_abbrev, season_type='regular')
     conf_only = { }
     for cur_game in all_conf_games:
         if (not cur_game.conference_game):

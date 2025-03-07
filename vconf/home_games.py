@@ -7,9 +7,9 @@ from virtualconf import StandingsRecord
 # export CFBD_API_KEY='my_long_secret_here'
 #
 
-configuration = cfbd.Configuration()
-configuration.api_key['Authorization'] = os.environ.get('CFBD_API_KEY')
-configuration.api_key_prefix['Authorization'] = 'Bearer'
+configuration = cfbd.Configuration(
+    access_token = os.environ.get('CFBD_API_KEY')
+)
 
 class HomeAwaySplit:
     def __init__(self, team_name):
@@ -40,7 +40,7 @@ api_instance = cfbd.GamesApi(cfbd.ApiClient(configuration))
 
 def check_home_games_for_year(cur_year, teams_dict, api_instance) :
     print("checking " + str(cur_year))
-    all_games = api_instance.get_games(year=cur_year)
+    all_games = api_instance.get_games(year=cur_year, season_type='regular')
     
     for cur_game in all_games:
         if cur_game.home_id not in teams_dict:
