@@ -46,20 +46,11 @@ def find_mcc_games(api_instance, teams, cur_year) :
 
 def games_db_query(api_instance, teams, cur_year):
     mcc_games = {}
-    for team_id in teams :
-        #print("looking for " + teams[team_id])
-        all_teams_games = api_instance.get_games(year=cur_year, team=teams[team_id], season_type='regular')
-        for cur_game in all_teams_games :
-            #print(cur_game)
-            other_team_id = -1
-            if (cur_game.away_id == team_id) :
-                other_team_id = cur_game.home_id
-            else :
-                other_team_id = cur_game.away_id
-                if other_team_id in teams :
-                    other_team = teams[other_team_id]
-                    #print("This was a MCC game " + teams[team_id] + " versus " + other_team)
-                    mcc_games[cur_game.id] = cur_game
+    # Get all games for the year in one API call
+    all_games = api_instance.get_games(year=cur_year, season_type='regular')
+    for game in all_games:
+        if game.home_id in teams and game.away_id in teams:
+            mcc_games[game.id] = game
     return mcc_games
 
 def timesortfunc(mcc_game) :
