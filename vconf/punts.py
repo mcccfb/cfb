@@ -55,8 +55,8 @@ def sadness_score(punt):
         pass
     else :
         seconds_since_halftime = (punt.period - 3) * 60 * 15
-        full_minutes = 14 - punt.clock['minutes']
-        seconds = 60 - punt.clock['seconds']
+        full_minutes = 14 - punt.clock.minutes
+        seconds = 60 - punt.clock.seconds
         seconds_since_halftime += (full_minutes * 60) + seconds
         time_factor = ((seconds_since_halftime * .001) ** 3) + 1
         retval *= time_factor
@@ -64,10 +64,10 @@ def sadness_score(punt):
     return retval
 
 
-def print_punt(punt):
-    fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
-    game_time = datetime.strptime(punt.wallclock, fmt)
-    pretty_date = datetime.strftime(game_time, "%b %d, %Y")
-
-    retval = pretty_date + " " + punt.offense + " with 4th and " + str(punt.distance) + ", " + str(punt.yards_to_goal) + " yards to goal, gameclock " + str(punt.clock['minutes']) + ":" + "{:0>2d}".format(punt.clock['seconds']) + " in Q" + str(punt.period) + " (score " + str(punt.offense_score) + "-" + str(punt.defense_score) + ")"
+def print_punt(punt, game_dates):
+    # Format the game date
+    game_date = game_dates.get(punt.game_id).astimezone()  # Convert to local timezone
+    pretty_date = game_date.strftime("%b %d, %Y")
+    
+    retval = pretty_date + " " + punt.offense + " with 4th and " + str(punt.distance) + ", " + str(punt.yards_to_goal) + " yards to goal, gameclock " + str(punt.clock.minutes) + ":" + "{:0>2d}".format(punt.clock.seconds) + " in Q" + str(punt.period) + " (score " + str(punt.offense_score) + "-" + str(punt.defense_score) + ")"
     return retval

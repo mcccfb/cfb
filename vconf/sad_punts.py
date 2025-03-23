@@ -12,24 +12,49 @@ configuration = cfbd.Configuration(
     access_token = os.environ.get('CFBD_API_KEY')
 )
 
-year = 2022
-week = 2
+year = 2024
+week = 11
 top_n = 20
 
 # note that week and year are required for the API
 api_instance = cfbd.PlaysApi(cfbd.ApiClient(configuration))
-#all_punts = api_instance.get_plays(year = year, week = week, team = 'Stanford', play_type = 52)
-all_punts = api_instance.get_plays(year=year, week=week, play_type=52, season_type='regular')
-#year_punts = api_instance.get_plays(year = year, week = week, play_type = 52)
+# First get all games for the week
+games_api = cfbd.GamesApi(cfbd.ApiClient(configuration))
+games = games_api.get_games(
+    year=year,
+    week=week,
+    season_type='regular',
+    classification='fbs'
+)
 
+# Create a lookup of game dates by game id
+game_dates = {game.id: game.start_date for game in games}
+
+# Get only punts from FBS vs FBS games
+all_punts = api_instance.get_plays(
+    year=year, 
+    week=week, 
+    play_type='PUNT', 
+    season_type='regular',
+    classification='fbs'
+)
+
+
+# Example of getting all punts for a specific team across multiple weeks:
 #all_punts = []
 #for cur_week in range(1, 16):
-#    week_punts = api_instance.get_plays(year = year, week = cur_week, team = 'UCLA', play_type = 52)
+#    week_punts = api_instance.get_plays(
+#        year=year,
+#        week=cur_week,
+#        team='UCLA',
+#        play_type='PUNT',
+#        classification='fbs'
+#    )
 #    all_punts += week_punts
 
 
 #for cur_punt in all_punts:
-#    print(print_punt(cur_punt))
+#    print(print_punt(cur_punt, game_dates))
 #    print("sadness score " + "{:.3f}".format(sadness_score(cur_punt)))
 
 sad_rank = sorted(all_punts, reverse = True, key = sadness_score)
@@ -41,4 +66,4 @@ for cur_punt in sad_rank:
     if (i >= top_n) :
         break
     i += 1
-    print("{:.3f}".format(sadness_score(cur_punt)) + " " + print_punt(cur_punt))
+    print("{:.3f}".format(sadness_score(cur_punt)) + " " + print_punt(cur_punt, game_dates))
