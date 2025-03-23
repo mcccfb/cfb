@@ -7,7 +7,7 @@ import cfbd
 def get_cfbd_elo_dict(configuration):
     api_instance = cfbd.RatingsApi(cfbd.ApiClient(configuration))
     this_year = date.today().year
-    api_response = api_instance.get_elo(year=this_year - 1, season_type='regular')
+    api_response = api_instance.get_elo(year=this_year, season_type='regular')
     retval = { }
     for entry in api_response:
         retval[entry.team] = entry
