@@ -36,6 +36,13 @@ def calc_yds_to_go_multiplier(dist):
         return 1.
     
 def sadness_score(punt):
+    if (punt.yards_to_goal <= 0):
+        # going to assume these are errors
+        return 0
+    
+    if (punt.distance == 0 and punt.yards_to_goal == 35):
+        return 0
+    
     retval = field_pos_score(punt.yards_to_goal)
 
     retval *= calc_yds_to_go_multiplier(punt.distance)
@@ -47,7 +54,7 @@ def sadness_score(punt):
     elif (punt.defense_score - punt.offense_score > 8) :
         retval *= 3.0
     else :
-        # two score diff is max pain
+        # one score diff is max pain
         retval *= 4.0
 
     # If team is leading or it's the first half we don't do a time adjustment
@@ -69,5 +76,7 @@ def print_punt(punt, game_dates):
     game_date = game_dates.get(punt.game_id).astimezone()  # Convert to local timezone
     pretty_date = game_date.strftime("%b %d, %Y")
     
-    retval = pretty_date + " " + punt.offense + " with 4th and " + str(punt.distance) + ", " + str(punt.yards_to_goal) + " yards to goal, gameclock " + str(punt.clock.minutes) + ":" + "{:0>2d}".format(punt.clock.seconds) + " in Q" + str(punt.period) + " (score " + str(punt.offense_score) + "-" + str(punt.defense_score) + ")"
+    retval = pretty_date + " " + punt.offense + " versus " + punt.defense + " with 4th and " + str(punt.distance) + ", " + str(punt.yards_to_goal) + " yards to goal, gameclock " + str(punt.clock.minutes) + ":" + "{:0>2d}".format(punt.clock.seconds) + " in Q" + str(punt.period) + " (score " + str(punt.offense_score) + "-" + str(punt.defense_score) + ")"
+    #retval = f"{pretty_date} {punt.offense} with 4th and {str(punt.distance)}, {str(punt.yards_to_goal)} yards to goal, gameclock {str(punt.clock.minutes)}:{{:0>2d}".format(punt.clock.seconds) + " in Q" + str(punt.period) + " (score " + str(punt.offense_score) + "-" + str(punt.defense_score) + ")"
+    
     return retval

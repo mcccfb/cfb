@@ -1,4 +1,5 @@
 import os
+import sys
 import cfbd
 from punts import sadness_score
 from punts import print_punt
@@ -13,57 +14,51 @@ configuration = cfbd.Configuration(
 )
 
 year = 2024
-week = 11
 top_n = 20
 
-# note that week and year are required for the API
+# Initialize API instances
 api_instance = cfbd.PlaysApi(cfbd.ApiClient(configuration))
-# First get all games for the week
 games_api = cfbd.GamesApi(cfbd.ApiClient(configuration))
-games = games_api.get_games(
-    year=year,
-    week=week,
-    season_type='regular',
-    classification='fbs'
-)
 
-# Create a lookup of game dates by game id
-game_dates = {game.id: game.start_date for game in games}
+# Lists to store all punts and game dates
+all_punts = []
+game_dates = {}
 
-# Get only punts from FBS vs FBS games
-all_punts = api_instance.get_plays(
-    year=year, 
-    week=week, 
-    play_type='PUNT', 
-    season_type='regular',
-    classification='fbs'
-)
+# Collect punts and games from all weeks
+for week in range(1, 16):
+    print(f"Fetching week {week}...", file=sys.stderr)
+    
+    # Get games for this week
+    games = games_api.get_games(
+        year=year,
+        week=week,
+        season_type='regular',
+        classification='fbs'
+    )
+    
+    # Add game dates to our lookup
+    for game in games:
+        game_dates[game.id] = game.start_date
+    
+    # Get punts for this week
+    week_punts = api_instance.get_plays(
+        year=year,
+        week=week,
+        play_type='PUNT',
+        season_type='regular',
+        classification='fbs'
+    )
+    
+    all_punts.extend(week_punts)
 
 
-# Example of getting all punts for a specific team across multiple weeks:
-#all_punts = []
-#for cur_week in range(1, 16):
-#    week_punts = api_instance.get_plays(
-#        year=year,
-#        week=cur_week,
-#        team='UCLA',
-#        play_type='PUNT',
-#        classification='fbs'
-#    )
-#    all_punts += week_punts
 
+# Sort all punts by sadness score
+sad_rank = sorted(all_punts, reverse=True, key=sadness_score)
 
-#for cur_punt in all_punts:
-#    print(print_punt(cur_punt, game_dates))
-#    print("sadness score " + "{:.3f}".format(sadness_score(cur_punt)))
+print(f"The {top_n} worst punts of {year} out of {len(sad_rank)} total punts:")
+print()
 
-sad_rank = sorted(all_punts, reverse = True, key = sadness_score)
-
-print("the " + str(top_n) + " worst punts out of " + str(len(sad_rank)))
-
-i = 0
-for cur_punt in sad_rank:
-    if (i >= top_n) :
-        break
-    i += 1
-    print("{:.3f}".format(sadness_score(cur_punt)) + " " + print_punt(cur_punt, game_dates))
+# Print the top N worst punts
+for i, cur_punt in enumerate(sad_rank[:top_n], 1):
+    print(f"{i}. {sadness_score(cur_punt):.3f} " + print_punt(cur_punt, game_dates))
