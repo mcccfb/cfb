@@ -76,7 +76,7 @@ def print_punt(punt, game_dates):
     game_date = game_dates.get(punt.game_id).astimezone()  # Convert to local timezone
     pretty_date = game_date.strftime("%b %d, %Y")
     
-    retval = pretty_date + " " + punt.offense + " versus " + punt.defense + " with 4th and " + str(punt.distance) + ", " + str(punt.yards_to_goal) + " yards to goal, gameclock " + str(punt.clock.minutes) + ":" + "{:0>2d}".format(punt.clock.seconds) + " in Q" + str(punt.period) + " (score " + str(punt.offense_score) + "-" + str(punt.defense_score) + ")"
+    retval = pretty_date + " gameID " + str(punt.game_id) + " " + punt.offense + " versus " + punt.defense + " with 4th and " + str(punt.distance) + ", " + str(punt.yards_to_goal) + " yards to goal, gameclock " + str(punt.clock.minutes) + ":" + "{:0>2d}".format(punt.clock.seconds) + " in Q" + str(punt.period) + " (score " + str(punt.offense_score) + "-" + str(punt.defense_score) + ")"
     #retval = f"{pretty_date} {punt.offense} with 4th and {str(punt.distance)}, {str(punt.yards_to_goal)} yards to goal, gameclock {str(punt.clock.minutes)}:{{:0>2d}".format(punt.clock.seconds) + " in Q" + str(punt.period) + " (score " + str(punt.offense_score) + "-" + str(punt.defense_score) + ")"
     
     return retval
