@@ -56,7 +56,14 @@ for week in range(1, 16):
 # Sort all punts by sadness score
 sad_rank = sorted(all_punts, reverse=True, key=sadness_score)
 
-print(f"The {top_n} worst punts of {year} out of {len(sad_rank)} total punts:")
+# Calculate median sadness score
+all_scores = [sadness_score(punt) for punt in all_punts]
+all_scores.sort()
+median_idx = len(all_scores) // 2
+median_score = all_scores[median_idx] if len(all_scores) % 2 == 1 else (all_scores[median_idx-1] + all_scores[median_idx]) / 2
+
+print(f"The {top_n} worst punts of {year} out of {len(sad_rank)} total punts")
+print(f"Median sadness score: {median_score:.3f}")
 print()
 
 # Print the top N worst punts
