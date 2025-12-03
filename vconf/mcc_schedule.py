@@ -13,6 +13,12 @@ configuration = cfbd.Configuration(
     access_token = os.environ.get('CFBD_API_KEY')
 )
 
+# FAU, FIU, Florida, Florida State, UCF, South Florida
+
+all_fl_teams = {2226: 'Florida Atlantic', 57: 'Florida',
+                2229: 'Florida International', 52: 'Florida State',
+                58: 'South Florida', 2116: 'UCF' }
+
 all_ca_teams = {25: 'California', 278: 'Fresno State', 16: 'Sacramento State',
                 21: 'San Diego State', 23: 'San José State', 24: 'Stanford',
                 302: 'UC Davis', 26: 'UCLA', 30: 'USC',
@@ -56,6 +62,7 @@ actual_pac_12 = {25: 'California',
 preset_confs = { 'CALIFORNIA': all_ca_teams,
                  'TEXAS' : all_tx_teams,
                  'PAC_12' : actual_pac_12,
+                 'FLORIDA' : all_fl_teams,
                  }
 
 if ('MCC_CONFERENCE' in os.environ and os.environ['MCC_CONFERENCE'] in preset_confs):
